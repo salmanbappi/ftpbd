@@ -197,7 +197,7 @@
 
     iput-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->name:Ljava/lang/String;
 
-    const-wide v0, 0x197db3276d8L
+    const-wide v0, 0x197db3276d9L
 
     iput-wide v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->time:J
 
