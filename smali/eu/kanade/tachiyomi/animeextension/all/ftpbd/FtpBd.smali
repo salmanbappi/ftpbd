@@ -378,7 +378,7 @@
 
     check-cast v0, Ljava/util/List;
 
-    const-string v1, "div.entry-content a[href*='server']"
+    const-string v1, "a[href*='server']"
 
     .line 291
     invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
