@@ -364,7 +364,7 @@
     const-string v5, ".mp4"
     invoke-virtual {v8, v5}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
     move-result v5
-    if-eqz v5, :cond_dir_loop
+    if-eqz v5, :dir_loop
     :cond_is_dir_file
     const-string v5, "td.fb-s"
     invoke-virtual {v4, v5}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
