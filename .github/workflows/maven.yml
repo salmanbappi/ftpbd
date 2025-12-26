@@ -43,13 +43,13 @@ jobs:
       - name: Sign APK
         run: |
           APKSIGNER=$(find $ANDROID_SDK_ROOT/build-tools -name apksigner | sort -r | head -n 1)
-          "$APKSIGNER" sign --ks keystore.jks --ks-pass "pass:dflix123" --key-pass "pass:dflix123" --out target/dflix-signed.apk target/dflix.apk
+          "$APKSIGNER" sign --ks keystore.jks --ks-pass "pass:ftpbd123" --key-pass "pass:ftpbd123" --ks-key-alias "ftpbd" --out target/ftpbd-signed.apk target/ftpbd.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: dflix-maven-build
-          path: target/dflix-signed.apk
+          name: ftpbd-maven-build
+          path: target/ftpbd-signed.apk
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -57,7 +57,7 @@ jobs:
         with:
           tag_name: maven-v${{ github.run_number }}
           name: Maven Release v${{ github.run_number }}
-          files: target/dflix-signed.apk
+          files: target/ftpbd-signed.apk
           draft: false
           prerelease: false
           generate_release_notes: true
