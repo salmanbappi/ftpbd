@@ -2127,7 +2127,7 @@
 
     move-result v4
 
-    if-nez v4, :cond_done
+    if-eqz v4, :cond_done
 
     invoke-interface {v2}, Ljava/util/Iterator;->next()Ljava/lang/Object;
 
@@ -2257,6 +2257,7 @@
 
 .method protected popularAnimeParse(Lokhttp3/Response;)Leu/kanade/tachiyomi/animesource/model/AnimesPage;
     .locals 1
+    const-string v0, "response"
     invoke-static {p1, v0}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullParameter(Ljava/lang/Object;Ljava/lang/String;)V
     invoke-virtual {p0, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->latestUpdatesParse(Lokhttp3/Response;)Leu/kanade/tachiyomi/animesource/model/AnimesPage;
     move-result-object v0
@@ -2272,6 +2273,7 @@
 
 .method protected searchAnimeParse(Lokhttp3/Response;)Leu/kanade/tachiyomi/animesource/model/AnimesPage;
     .locals 1
+    const-string v0, "response"
     invoke-static {p1, v0}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullParameter(Ljava/lang/Object;Ljava/lang/String;)V
     invoke-virtual {p0, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->latestUpdatesParse(Lokhttp3/Response;)Leu/kanade/tachiyomi/animesource/model/AnimesPage;
     move-result-object v0
