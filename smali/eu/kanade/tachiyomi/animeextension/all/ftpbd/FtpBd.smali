@@ -323,6 +323,10 @@
     goto :link_loop
 
     :cond_check_dir
+    invoke-interface {v0}, Ljava/util/List;->isEmpty()Z
+    move-result v3
+    if-nez v3, :link_loop
+
     const-string v3, "/"
     invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
     move-result v3
