@@ -2153,8 +2153,7 @@
     const-string v6, "div.post-image img"
     invoke-virtual {v4, v6}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
     move-result-object v6
-    if-nez v6, :cond_img_ok
-    goto :loop_start
+    if-eqz v6, :cond_no_img
     :cond_img_ok
     const-string v7, "alt"
     invoke-virtual {v6, v7}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
@@ -2168,15 +2167,34 @@
     invoke-virtual {v7, v8, v9}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
     move-result-object v7
     invoke-interface {v5, v7}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
-    const-string v6, "div.post-image a"
+    goto :cond_links
+    :cond_no_img
+    const-string v6, "h3.post-title a"
     invoke-virtual {v4, v6}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
     move-result-object v6
+    if-nez v6, :cond_title_ok
+    const-string v6, "div.post-content a"
+    invoke-virtual {v4, v6}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    move-result-object v6
+    :cond_title_ok
+    if-nez v6, :cond_skip_item
+    invoke-virtual {v6}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
+    move-result-object v7
+    invoke-interface {v5, v7}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
+    :cond_links
+    const-string v6, "div.post-content a"
+    invoke-virtual {v4, v6}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    move-result-object v6
+    if-nez v6, :cond_final_link
+    :cond_skip_item
+    goto/16 :loop_start
+    :cond_final_link
     const-string v7, "abs:href"
     invoke-virtual {v6, v7}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
     move-result-object v6
     invoke-interface {v5, v6}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setUrl(Ljava/lang/String;)V
     invoke-virtual {v3, v5}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
-    goto :loop_start
+    goto/16 :loop_start
     :cond_done
     const-string v2, "a.next.page-numbers"
     invoke-virtual {p1, v2}, Lorg/jsoup/nodes/Document;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
