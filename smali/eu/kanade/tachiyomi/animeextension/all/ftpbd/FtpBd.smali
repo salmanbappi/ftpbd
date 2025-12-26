@@ -103,7 +103,7 @@
         "sortByTitle",
         "Companion",
         "EpisodeData",
-        "aniyomi-all.dflix-v14.18_release"
+        "aniyomi-all.ftpbd-v1.0_release"
     }
     k = 0x1
     mv = {
@@ -2307,7 +2307,7 @@
         
             const-string v0, "Referer"
         
-            const-string v1, "https://dflix.discoveryftp.net/"
+            const-string v1, "https://old.ftpbd.net/"
         
             invoke-virtual {v6, v0, v1}, Lokhttp3/Headers$Builder;->add(Ljava/lang/String;Ljava/lang/String;)Lokhttp3/Headers$Builder;
         
