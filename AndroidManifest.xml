@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest android:versionCode="1017" android:versionName="14.1017" xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="32" android:compileSdkVersionCodename="12" package="eu.kanade.tachiyomi.animeextension.all.ftpbd" platformBuildVersionCode="32" platformBuildVersionName="12">
     <uses-feature android:name="tachiyomi.animeextension"/>
-    <application android:allowBackup="false" android:extractNativeLibs="true" android:icon="@drawable/app_icon" android:label="Aniyomi: FtpBd">
+    <application android:allowBackup="false" android:extractNativeLibs="true" android:icon="@drawable/app_icon" android:label="FtpBd">
         <meta-data android:name="tachiyomi.animeextension.class" android:value="eu.kanade.tachiyomi.animeextension.all.ftpbd.FtpBd"/>
         <meta-data android:name="tachiyomi.animeextension.nsfw" android:value="0"/>
     </application>

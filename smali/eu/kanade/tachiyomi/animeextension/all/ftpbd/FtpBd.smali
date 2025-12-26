@@ -1759,27 +1759,10 @@
 .end method
 
 .method public getBaseUrl()Ljava/lang/String;
-    .locals 5
+    .locals 1
 
-    .line 37
-    invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
+    const-string v0, "https://old.ftpbd.net"
 
-    move-result-wide v0
-
-    iget-wide v2, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->time:J
-
-    cmp-long v4, v0, v2
-
-    if-ltz v4, :cond_0
-
-    iget-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->rick:Ljava/lang/String;
-
-    goto :goto_0
-
-    :cond_0
-    iget-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->url:Ljava/lang/String;
-
-    :goto_0
     return-object v0
 .end method
 
@@ -2121,7 +2104,7 @@
         
             const-string v0, "Referer"
         
-            const-string v1, "https://server3.ftpbd.net/"
+            const-string v1, "https://old.ftpbd.net/"
         
             invoke-virtual {v6, v0, v1}, Lokhttp3/Headers$Builder;->add(Ljava/lang/String;Ljava/lang/String;)Lokhttp3/Headers$Builder;
         
@@ -2224,9 +2207,19 @@
 
 
 .method protected latestUpdatesRequest(I)Lokhttp3/Request;
-    .locals 3
+    .locals 4
 
-    .line 66
+    const/4 v0, 0x1
+
+    if-ne p1, v0, :cond_0
+
+    invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getBaseUrl()Ljava/lang/String;
+
+    move-result-object p1
+
+    goto :goto_0
+
+    :cond_0
     new-instance v0, Ljava/lang/StringBuilder;
 
     invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
@@ -2251,6 +2244,7 @@
 
     move-result-object p1
 
+    :goto_0
     invoke-direct {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getGlobalHeaders()Lokhttp3/Headers;
 
     move-result-object v0
