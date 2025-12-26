@@ -1,0 +1,83 @@
+.method private final extractEpisode(Lorg/jsoup/nodes/Document;)Ljava/util/List;
+    .locals 11
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "(",
+            "Lorg/jsoup/nodes/Document;",
+            ")",
+            "Ljava/util/List<",
+            "Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;",
+            ">;"
+        }
+    .end annotation
+
+    new-instance v0, Ljava/util/ArrayList;
+    invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
+    check-cast v0, Ljava/util/List;
+
+    const-string v1, "a[href*='server']"
+    invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
+    move-result-object p1
+    check-cast p1, Ljava/lang/Iterable;
+    invoke-interface {p1}, Ljava/lang/Iterable;->iterator()Ljava/util/Iterator;
+    move-result-object p1
+
+    :cond_0
+    :goto_0
+    invoke-interface {p1}, Ljava/util/Iterator;->hasNext()Z
+    move-result v1
+    if-eqz v1, :cond_9
+    invoke-interface {p1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+    move-result-object v1
+    check-cast v1, Lorg/jsoup/nodes/Element;
+
+    const-string v2, "href"
+    invoke-virtual {v1, v2}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v7 # videoUrl
+    if-nez v7, :cond_1
+    goto :goto_0
+
+    :cond_1
+    invoke-virtual {v1}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
+    move-result-object v6 # episodeName
+    if-eqz v6, :cond_2
+    invoke-virtual {v6}, Ljava/lang/String;->trim()Ljava/lang/String;
+    move-result-object v6
+    invoke-virtual {v6}, Ljava/lang/String;->isEmpty()Z
+    move-result v2
+    if-eqz v2, :cond_3
+    :cond_2
+    const-string v2, "img"
+    invoke-virtual {v1, v2}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    move-result-object v2
+    if-eqz v2, :cond_4
+    const-string v3, "alt"
+    invoke-virtual {v2, v3}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v6
+    :cond_3
+    if-eqz v6, :cond_4
+    invoke-virtual {v6}, Ljava/lang/String;->isEmpty()Z
+    move-result v2
+    if-eqz v2, :cond_5
+    :cond_4
+    const-string v2, "/"
+    invoke-virtual {v7, v2}, Ljava/lang/String;->lastIndexOf(Ljava/lang/String;)I
+    move-result v2
+    add-int/lit8 v2, v2, 0x1
+    invoke-virtual {v7, v2}, Ljava/lang/String;->substring(I)Ljava/lang/String;
+    move-result-object v6
+
+    :cond_5
+    const-string v8, "" # size
+    const-string v9, "Download" # seasonEpisode (placeholder)
+    const-string v10, "Direct" # quality
+
+    new-instance v1, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
+    move-object v5, v1
+    invoke-direct/range {v5 .. v10}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+    invoke-interface {v0, v1}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    goto :goto_0
+
+    :cond_9
+    return-object v0
+.end method

@@ -371,314 +371,72 @@
         }
     .end annotation
 
-    .line 289
     new-instance v0, Ljava/util/ArrayList;
-
     invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
-
     check-cast v0, Ljava/util/List;
 
     const-string v1, "a[href*='server']"
-
-    .line 291
     invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
-
     move-result-object p1
-
-    const-string v1, "episodeContainers"
-
-    .line 293
-    invoke-static {p1, v1}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullExpressionValue(Ljava/lang/Object;Ljava/lang/String;)V
-
     check-cast p1, Ljava/lang/Iterable;
-
-    .line 378
     invoke-interface {p1}, Ljava/lang/Iterable;->iterator()Ljava/util/Iterator;
-
     move-result-object p1
 
     :cond_0
     :goto_0
     invoke-interface {p1}, Ljava/util/Iterator;->hasNext()Z
-
     move-result v1
-
     if-eqz v1, :cond_9
-
     invoke-interface {p1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
-
     move-result-object v1
-
     check-cast v1, Lorg/jsoup/nodes/Element;
 
+    const-string v2, "href"
+    invoke-virtual {v1, v2}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v7 # videoUrl (p2)
+    if-eqz v7, :cond_0
+
     invoke-virtual {v1}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
-
-    move-result-object v2
-
-    const-string v3, "text()"
-
-    const-string v4, ""
-
-    if-eqz v2, :cond_1
-
-    invoke-static {v2, v3}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullExpressionValue(Ljava/lang/Object;Ljava/lang/String;)V
-
-    check-cast v2, Ljava/lang/CharSequence;
-
-    invoke-static {v2}, Lkotlin/text/StringsKt;->trim(Ljava/lang/CharSequence;)Ljava/lang/CharSequence;
-
-    move-result-object v2
-
-    invoke-virtual {v2}, Ljava/lang/Object;->toString()Ljava/lang/String;
-
-    move-result-object v2
-
-    if-nez v2, :cond_2
-
+    move-result-object v9 # episodeName (p4)
+    if-eqz v9, :cond_1
+    invoke-virtual {v9}, Ljava/lang/String;->trim()Ljava/lang/String;
+    move-result-object v9
+    invoke-virtual {v9}, Ljava/lang/String;->isEmpty()Z
+    move-result v2
+    if-eqz v2, :cond_3
     :cond_1
-    move-object v2, v4
-
-    .line 295
+    const-string v2, "img"
+    invoke-virtual {v1, v2}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    move-result-object v2
+    if-eqz v2, :cond_2
+    const-string v3, "alt"
+    invoke-virtual {v2, v3}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v9
     :cond_2
-    move-object v5, v2
-
-    check-cast v5, Ljava/lang/CharSequence;
-
-    const-string v2, "&nbsp;"
-
-    filled-new-array {v2}, [Ljava/lang/String;
-
-    move-result-object v6
-
-    const/4 v7, 0x0
-
-    const/4 v8, 0x0
-
-    const/4 v9, 0x6
-
-    const/4 v10, 0x0
-
-    invoke-static/range {v5 .. v10}, Lkotlin/text/StringsKt;->split$default(Ljava/lang/CharSequence;[Ljava/lang/String;ZIILjava/lang/Object;)Ljava/util/List;
-
-    move-result-object v2
-
-    invoke-static {v2}, Lkotlin/collections/CollectionsKt;->first(Ljava/util/List;)Ljava/lang/Object;
-
-    move-result-object v2
-
-    check-cast v2, Ljava/lang/String;
-
-    check-cast v2, Ljava/lang/CharSequence;
-
-    invoke-static {v2}, Lkotlin/text/StringsKt;->trim(Ljava/lang/CharSequence;)Ljava/lang/CharSequence;
-
-    move-result-object v2
-
-    invoke-virtual {v2}, Ljava/lang/Object;->toString()Ljava/lang/String;
-
-    move-result-object v2
-
-    if-nez v2, :cond_3
-
-    move-object v6, v4
-
-    goto :goto_1
-
-    :cond_3
-    move-object v6, v2
-
-    :goto_1
-    const-string v5, "href"
-
-    invoke-virtual {v1, v5}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
-
-    move-result-object v2
-
-    const-string v5, "container.select(\"h5 a\").attr(\"href\")"
-
-    invoke-static {v2, v5}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullExpressionValue(Ljava/lang/Object;Ljava/lang/String;)V
-
-    check-cast v2, Ljava/lang/CharSequence;
-
-    invoke-static {v2}, Lkotlin/text/StringsKt;->trim(Ljava/lang/CharSequence;)Ljava/lang/CharSequence;
-
-    move-result-object v2
-
-    invoke-virtual {v2}, Ljava/lang/Object;->toString()Ljava/lang/String;
-
-    move-result-object v2
-
+    if-eqz v9, :cond_4
+    invoke-virtual {v9}, Ljava/lang/String;->isEmpty()Z
+    move-result v2
     if-nez v2, :cond_4
-
-    move-object v7, v4
-
-    goto :goto_2
-
+    :cond_3
+    goto :goto_extract_filename
     :cond_4
-    move-object v7, v2
+    const-string v2, "/"
+    invoke-virtual {v7, v2}, Ljava/lang/String;->lastIndexOf(Ljava/lang/String;)I
+    move-result v2
+    add-int/lit8 v2, v2, 0x1
+    invoke-virtual {v7, v2}, Ljava/lang/String;->substring(I)Ljava/lang/String;
+    move-result-object v9
+
+    :goto_extract_filename
+    const-string v6, "Download" # seasonEpisode (p1)
+    const-string v8, "" # size (p3)
+    const-string v10, "Direct" # quality (p5)
 
-    :goto_2
-    const-string v2, "h5 .badge-fill"
-
-    .line 297
-    invoke-virtual {v1, v2}, Lorg/jsoup/nodes/Element;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
-
-    move-result-object v2
-
-    invoke-virtual {v2}, Lorg/jsoup/select/Elements;->text()Ljava/lang/String;
-
-    move-result-object v2
-
-    const-string v5, "container.select(\"h5 .badge-fill\").text()"
-
-    invoke-static {v2, v5}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullExpressionValue(Ljava/lang/Object;Ljava/lang/String;)V
-
-    check-cast v2, Ljava/lang/CharSequence;
-
-    sget-object v5, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->SIZE_REGEX:Lkotlin/text/Regex;
-
-    const-string v8, "$1"
-
-    .line 298
-    invoke-virtual {v5, v2, v8}, Lkotlin/text/Regex;->replace(Ljava/lang/CharSequence;Ljava/lang/String;)Ljava/lang/String;
-
-    move-result-object v2
-
-    .line 299
-    check-cast v2, Ljava/lang/CharSequence;
-
-    invoke-static {v2}, Lkotlin/text/StringsKt;->trim(Ljava/lang/CharSequence;)Ljava/lang/CharSequence;
-
-    move-result-object v2
-
-    invoke-virtual {v2}, Ljava/lang/Object;->toString()Ljava/lang/String;
-
-    move-result-object v8
-
-    const-string v2, "h4"
-
-    .line 300
-    invoke-virtual {v1, v2}, Lorg/jsoup/nodes/Element;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
-
-    move-result-object v2
-
-    invoke-virtual {v2}, Lorg/jsoup/select/Elements;->first()Lorg/jsoup/nodes/Element;
-
-    move-result-object v2
-
-    if-eqz v2, :cond_6
-
-    invoke-virtual {v2}, Lorg/jsoup/nodes/Element;->ownText()Ljava/lang/String;
-
-    move-result-object v2
-
-    if-eqz v2, :cond_6
-
-    invoke-static {v2, v3}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullExpressionValue(Ljava/lang/Object;Ljava/lang/String;)V
-
-    check-cast v2, Ljava/lang/CharSequence;
-
-    invoke-static {v2}, Lkotlin/text/StringsKt;->trim(Ljava/lang/CharSequence;)Ljava/lang/CharSequence;
-
-    move-result-object v2
-
-    invoke-virtual {v2}, Ljava/lang/Object;->toString()Ljava/lang/String;
-
-    move-result-object v2
-
-    if-nez v2, :cond_5
-
-    goto :goto_3
-
-    :cond_5
-    move-object v9, v2
-
-    goto :goto_4
-
-    :cond_6
-    :goto_3
-    move-object v9, v4
-
-    :goto_4
-    const-string v2, "h4 .badge-outline"
-
-    .line 301
-    invoke-virtual {v1, v2}, Lorg/jsoup/nodes/Element;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
-
-    move-result-object v1
-
-    invoke-virtual {v1}, Lorg/jsoup/select/Elements;->first()Lorg/jsoup/nodes/Element;
-
-    move-result-object v1
-
-    if-eqz v1, :cond_8
-
-    invoke-virtual {v1}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
-
-    move-result-object v1
-
-    if-eqz v1, :cond_8
-
-    const-string v2, "text()"
-
-    invoke-static {v1, v2}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullExpressionValue(Ljava/lang/Object;Ljava/lang/String;)V
-
-    check-cast v1, Ljava/lang/CharSequence;
-
-    invoke-static {v1}, Lkotlin/text/StringsKt;->trim(Ljava/lang/CharSequence;)Ljava/lang/CharSequence;
-
-    move-result-object v1
-
-    invoke-virtual {v1}, Ljava/lang/Object;->toString()Ljava/lang/String;
-
-    move-result-object v1
-
-    if-nez v1, :cond_7
-
-    goto :goto_5
-
-    :cond_7
-    move-object v10, v1
-
-    goto :goto_6
-
-    :cond_8
-    :goto_5
-    move-object v10, v4
-
-    .line 303
-    :goto_6
-    move-object v1, v6
-
-    check-cast v1, Ljava/lang/CharSequence;
-
-    invoke-interface {v1}, Ljava/lang/CharSequence;->length()I
-
-    move-result v1
-
-    if-lez v1, :cond_0
-
-    move-object v1, v7
-
-    check-cast v1, Ljava/lang/CharSequence;
-
-    invoke-interface {v1}, Ljava/lang/CharSequence;->length()I
-
-    move-result v1
-
-    if-lez v1, :cond_0
-
-    .line 305
     new-instance v1, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
-
     move-object v5, v1
-
     invoke-direct/range {v5 .. v10}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-
-    .line 304
     invoke-interface {v0, v1}, Ljava/util/List;->add(Ljava/lang/Object;)Z
-
-    goto/16 :goto_0
+    goto :goto_0
 
     :cond_9
     return-object v0
