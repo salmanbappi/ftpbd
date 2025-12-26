@@ -26,7 +26,7 @@ def generate():
     apk_file = apks[0]
     
     item = {
-        "name": "Aniyomi: FtpBd",
+        "name": "FtpBd",
         "pkg": "eu.kanade.tachiyomi.animeextension.all.ftpbd",
         "apk": apk_file,
         "lang": "all",
@@ -52,7 +52,7 @@ def generate():
             "name": "SalmanBappi Extensions",
             "shortName": "salmanbappi",
             "website": "https://github.com/salmanbappi/ftpbd",
-            "signingKeyFingerprint": "c7ebe223044970f2f9738f600dc25c180d3ed03994e088aaf5709338c57b93af"
+            "signingKeyFingerprint": "17a9a43374e4951aadb5f33e6d8b10a21e231cdfda050a0473a50254494dc040"
         }
     }
     with open("repo.json", "w") as f:
