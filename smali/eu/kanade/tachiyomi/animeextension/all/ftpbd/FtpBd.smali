@@ -197,7 +197,7 @@
 
     iput-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->name:Ljava/lang/String;
 
-    const-wide v0, 0x7fffffffffffffffL
+    const-wide v0, 0x0L
 
     iput-wide v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->time:J
 
@@ -303,20 +303,26 @@
     const-string v3, ".mp4"
     invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
     move-result v3
-    if-eqz v3, :cond_is_dir
+    if-eqz v3, :cond_check_dir
 
     :cond_is_file
+    const-string v3, "https://old.ftpbd.net"
+    const-string v4, "https://server3.ftpbd.net"
+    const/4 v5, 0x0
+    const/4 v6, 0x4
+    const/4 v7, 0x0
+    invoke-static/range {v2 .. v7}, Lkotlin/text/StringsKt;->replace$default(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
+    move-result-object v5
     new-instance v3, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
     const-string v4, "Download"
     const-string v6, ""
     const-string v7, "File"
     const-string v8, "Direct"
-    move-object v5, v2
     invoke-direct/range {v3 .. v8}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
     invoke-interface {v0, v3}, Ljava/util/List;->add(Ljava/lang/Object;)Z
     goto :link_loop
 
-    :cond_is_dir
+    :cond_check_dir
     const-string v3, "/"
     invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
     move-result v3
