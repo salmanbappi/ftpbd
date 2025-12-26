@@ -18,15 +18,16 @@ def generate():
     version_name = version_info.get("versionName")
     version_code = version_info.get("versionCode")
     
-    apks = [f for f in os.listdir(".") if f.startswith("ftpbd") and f.endswith(".apk")]
+    # Filter for signed APKs (skip unsigned)
+    apks = [f for f in os.listdir(".") if f.startswith("ftpbd") and f.endswith(".apk") and "unsigned" not in f]
     if not apks:
-        print("No APK found!")
+        print("No signed APK found!")
         return
         
     apk_file = apks[0]
     
     item = {
-        "name": "FtpBd",
+        "name": "Aniyomi: FtpBd",
         "pkg": "eu.kanade.tachiyomi.animeextension.all.ftpbd",
         "apk": apk_file,
         "lang": "all",
