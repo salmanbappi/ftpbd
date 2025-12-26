@@ -264,7 +264,7 @@
 
     check-cast v3, Lorg/jsoup/nodes/Element;
 
-    const-string v5, "href"
+    const-string v5, "abs:href"
 
     invoke-virtual {v3, v5}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
 
