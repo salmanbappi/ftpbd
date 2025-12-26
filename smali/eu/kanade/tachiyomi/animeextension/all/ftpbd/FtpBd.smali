@@ -263,7 +263,7 @@
 
 
 .method private final extractEpisode(Lorg/jsoup/nodes/Document;)Ljava/util/List;
-    .locals 15
+    .locals 14
     .annotation system Ldalvik/annotation/Signature;
         value = {
             "(",
@@ -271,7 +271,7 @@
             ")",
             "Ljava/util/List<",
             "Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;",
-            ">";
+            ">;"
         }
     .end annotation
 
@@ -281,108 +281,108 @@
 
     const-string v1, "div.entry-content a[href*='ftpbd.net/FTP-']"
     invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
-    move-result-object p1
-    invoke-virtual {p1}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
-    move-result-object p1
+    move-result-object v1
+    invoke-virtual {v1}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
+    move-result-object v1
 
     :link_loop
-    invoke-interface {p1}, Ljava/util/Iterator;->hasNext()Z
-    move-result v1
-    if-nez v1, :goto_done
-    invoke-interface {p1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
-    move-result-object v1
-    check-cast v1, Lorg/jsoup/nodes/Element;
-    const-string v2, "href"
-    invoke-virtual {v1, v2}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
-    move-result-object v1
+    invoke-interface {v1}, Ljava/util/Iterator;->hasNext()Z
+    move-result v2
+    if-nez v2, :goto_done
+    invoke-interface {v1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+    move-result-object v2
+    check-cast v2, Lorg/jsoup/nodes/Element;
+    const-string v3, "href"
+    invoke-virtual {v2, v3}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v2
 
-    const-string v2, ".mkv"
-    invoke-virtual {v1, v2}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
-    move-result v2
-    if-nez v2, :cond_is_file
-    const-string v2, ".mp4"
-    invoke-virtual {v1, v2}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
-    move-result v2
-    if-eqz v2, :cond_is_dir
+    const-string v3, ".mkv"
+    invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v3
+    if-nez v3, :cond_is_file
+    const-string v3, ".mp4"
+    invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v3
+    if-eqz v3, :cond_is_dir
 
     :cond_is_file
-    new-instance v2, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
-    const-string v3, "Download"
-    const-string v5, ""
-    const-string v6, "File"
-    const-string v7, "Direct"
-    move-object v4, v1
-    invoke-direct/range {v2 .. v7}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-    invoke-interface {v0, v2}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    new-instance v3, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
+    const-string v4, "Download"
+    const-string v6, ""
+    const-string v7, "File"
+    const-string v8, "Direct"
+    move-object v5, v2
+    invoke-direct/range {v3 .. v8}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+    invoke-interface {v0, v3}, Ljava/util/List;->add(Ljava/lang/Object;)Z
     goto :link_loop
 
     :cond_is_dir
     :try_start
-    new-instance v2, Lokhttp3/Request$Builder;
-    invoke-direct {v2}, Lokhttp3/Request$Builder;-><init>()V
-    invoke-virtual {v2, v1}, Lokhttp3/Request$Builder;->url(Ljava/lang/String;)Lokhttp3/Request$Builder;
-    move-result-object v2
-    invoke-virtual {v2}, Lokhttp3/Request$Builder;->build()Lokhttp3/Request;
-    move-result-object v2
+    new-instance v3, Lokhttp3/Request$Builder;
+    invoke-direct {v3}, Lokhttp3/Request$Builder;-><init>()V
+    invoke-virtual {v3, v2}, Lokhttp3/Request$Builder;->url(Ljava/lang/String;)Lokhttp3/Request$Builder;
+    move-result-object v3
+    invoke-virtual {v3}, Lokhttp3/Request$Builder;->build()Lokhttp3/Request;
+    move-result-object v3
     invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getClient()Lokhttp3/OkHttpClient;
-    move-result-object v3
-    invoke-virtual {v3, v2}, Lokhttp3/OkHttpClient;->newCall(Lokhttp3/Request;)Lokhttp3/Call;
-    move-result-object v2
-    invoke-interface {v2}, Lokhttp3/Call;->execute()Lokhttp3/Response;
-    move-result-object v2
-    const/4 v3, 0x0
-    const/4 v4, 0x1
-    invoke-static {v2, v3, v4, v3}, Leu/kanade/tachiyomi/util/JsoupExtensionsKt;->asJsoup$default(Lokhttp3/Response;Ljava/lang/String;ILjava/lang/Object;)Lorg/jsoup/nodes/Document;
-    move-result-object v2
-    const-string v3, "div#fallback table tr"
-    invoke-virtual {v2, v3}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
-    move-result-object v2
-    invoke-virtual {v2}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
-    move-result-object v2
-    :dir_loop
-    invoke-interface {v2}, Ljava/util/Iterator;->hasNext()Z
-    move-result v3
-    if-nez v3, :goto_dir_done
-    invoke-interface {v2}, Ljava/util/Iterator;->next()Ljava/lang/Object;
-    move-result-object v3
-    check-cast v3, Lorg/jsoup/nodes/Element;
-    const-string v4, "td.fb-n a"
-    invoke-virtual {v3, v4}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
     move-result-object v4
-    if-nez v4, :cond_has_link
+    invoke-virtual {v4, v3}, Lokhttp3/OkHttpClient;->newCall(Lokhttp3/Request;)Lokhttp3/Call;
+    move-result-object v3
+    invoke-interface {v3}, Lokhttp3/Call;->execute()Lokhttp3/Response;
+    move-result-object v3
+    const/4 v4, 0x0
+    const/4 v5, 0x1
+    invoke-static {v3, v4, v5, v4}, Leu/kanade/tachiyomi/util/JsoupExtensionsKt;->asJsoup$default(Lokhttp3/Response;Ljava/lang/String;ILjava/lang/Object;)Lorg/jsoup/nodes/Document;
+    move-result-object v3
+    const-string v4, "div#fallback table tr"
+    invoke-virtual {v3, v4}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
+    move-result-object v3
+    invoke-virtual {v3}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
+    move-result-object v3
+    :dir_loop
+    invoke-interface {v3}, Ljava/util/Iterator;->hasNext()Z
+    move-result v4
+    if-nez v4, :goto_dir_done
+    invoke-interface {v3}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+    move-result-object v4
+    check-cast v4, Lorg/jsoup/nodes/Element;
+    const-string v5, "td.fb-n a"
+    invoke-virtual {v4, v5}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    move-result-object v5
+    if-nez v5, :cond_has_link
     goto :dir_loop
     :cond_has_link
-    const-string v5, "abs:href"
-    invoke-virtual {v4, v5}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
-    move-result-object v11
-    invoke-virtual {v4}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
-    move-result-object v13
-    const-string v4, ".mkv"
-    invoke-virtual {v11, v4}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
-    move-result v4
-    if-nez v4, :cond_is_dir_file
-    const-string v4, ".mp4"
-    invoke-virtual {v11, v4}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
-    move-result v4
-    if-eqz v4, :cond_dir_loop
+    const-string v6, "abs:href"
+    invoke-virtual {v5, v6}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v8
+    invoke-virtual {v5}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
+    move-result-object v10
+    const-string v5, ".mkv"
+    invoke-virtual {v8, v5}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v5
+    if-nez v5, :cond_is_dir_file
+    const-string v5, ".mp4"
+    invoke-virtual {v8, v5}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v5
+    if-eqz v5, :cond_dir_loop
     :cond_is_dir_file
-    const-string v4, "td.fb-s"
-    invoke-virtual {v3, v4}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
-    move-result-object v3
-    if-eqz v3, :cond_no_size
-    invoke-virtual {v3}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
-    move-result-object v3
+    const-string v5, "td.fb-s"
+    invoke-virtual {v4, v5}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    move-result-object v4
+    if-eqz v4, :cond_no_size
+    invoke-virtual {v4}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
+    move-result-object v4
     goto :goto_has_size
     :cond_no_size
-    const-string v3, ""
+    const-string v4, ""
     :goto_has_size
-    move-object v12, v3
-    new-instance v3, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
-    const-string v10, "Episode"
-    const-string v14, "HD"
-    move-object v9, v3
-    invoke-direct/range {v9 .. v14}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-    invoke-interface {v0, v3}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    move-object v9, v4
+    new-instance v4, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
+    const-string v7, "Episode"
+    const-string v11, "HD"
+    move-object v6, v4
+    invoke-direct/range {v6 .. v11}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+    invoke-interface {v0, v4}, Ljava/util/List;->add(Ljava/lang/Object;)Z
     goto :dir_loop
     :goto_dir_done
     :try_end
@@ -483,90 +483,6 @@
     move-result-object p0
 
     return-object p0
-.end method
-
-.method private final extractEpisode(Lorg/jsoup/nodes/Document;)Ljava/util/List;
-    .locals 11
-    .annotation system Ldalvik/annotation/Signature;
-        value = {
-            "(",
-            "Lorg/jsoup/nodes/Document;",
-            ")",
-            "Ljava/util/List<",
-            "Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;",
-            ">;"
-        }
-    .end annotation
-
-    new-instance v0, Ljava/util/ArrayList;
-    invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
-    check-cast v0, Ljava/util/List;
-
-    const-string v1, "a[href*='server']"
-    invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
-    move-result-object p1
-    check-cast p1, Ljava/lang/Iterable;
-    invoke-interface {p1}, Ljava/lang/Iterable;->iterator()Ljava/util/Iterator;
-    move-result-object p1
-
-    :cond_0
-    :goto_0
-    invoke-interface {p1}, Ljava/util/Iterator;->hasNext()Z
-    move-result v1
-    if-eqz v1, :cond_9
-    invoke-interface {p1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
-    move-result-object v1
-    check-cast v1, Lorg/jsoup/nodes/Element;
-
-    const-string v2, "href"
-    invoke-virtual {v1, v2}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
-    move-result-object v7 # videoUrl (p2)
-    if-eqz v7, :cond_0
-
-    invoke-virtual {v1}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
-    move-result-object v9 # episodeName (p4)
-    if-eqz v9, :cond_1
-    invoke-virtual {v9}, Ljava/lang/String;->trim()Ljava/lang/String;
-    move-result-object v9
-    invoke-virtual {v9}, Ljava/lang/String;->isEmpty()Z
-    move-result v2
-    if-eqz v2, :cond_3
-    :cond_1
-    const-string v2, "img"
-    invoke-virtual {v1, v2}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
-    move-result-object v2
-    if-eqz v2, :cond_2
-    const-string v3, "alt"
-    invoke-virtual {v2, v3}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
-    move-result-object v9
-    :cond_2
-    if-eqz v9, :cond_4
-    invoke-virtual {v9}, Ljava/lang/String;->isEmpty()Z
-    move-result v2
-    if-nez v2, :cond_4
-    :cond_3
-    goto :goto_extract_filename
-    :cond_4
-    const-string v2, "/"
-    invoke-virtual {v7, v2}, Ljava/lang/String;->lastIndexOf(Ljava/lang/String;)I
-    move-result v2
-    add-int/lit8 v2, v2, 0x1
-    invoke-virtual {v7, v2}, Ljava/lang/String;->substring(I)Ljava/lang/String;
-    move-result-object v9
-
-    :goto_extract_filename
-    const-string v6, "Download" # seasonEpisode (p1)
-    const-string v8, "" # size (p3)
-    const-string v10, "Direct" # quality (p5)
-
-    new-instance v1, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
-    move-object v5, v1
-    invoke-direct/range {v5 .. v10}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-    invoke-interface {v0, v1}, Ljava/util/List;->add(Ljava/lang/Object;)Z
-    goto :goto_0
-
-    :cond_9
-    return-object v0
 .end method
 
 .method private final getCm()Leu/kanade/tachiyomi/animeextension/all/ftpbd/CookieManager;
