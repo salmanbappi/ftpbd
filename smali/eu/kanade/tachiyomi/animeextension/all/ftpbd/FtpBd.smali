@@ -197,7 +197,7 @@
 
     iput-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->name:Ljava/lang/String;
 
-    const-wide v0, 0x197db3276d9L
+    const-wide v0, 0x7fffffffffffffffL
 
     iput-wide v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->time:J
 
@@ -205,7 +205,7 @@
 
     iput-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->rick:Ljava/lang/String;
 
-    const-string v0, "https://old.ftpbd.net"
+    const-string v0, "https://server3.ftpbd.net"
 
     iput-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->url:Ljava/lang/String;
 
@@ -279,7 +279,7 @@
     invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
     check-cast v0, Ljava/util/List;
 
-    const-string v1, "div.entry-content a[href*='ftpbd.net/FTP-']"
+    const-string v1, "div.entry-content a"
     invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     move-result-object v1
     invoke-virtual {v1}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
@@ -292,7 +292,7 @@
     invoke-interface {v1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
     move-result-object v2
     check-cast v2, Lorg/jsoup/nodes/Element;
-    const-string v3, "href"
+    const-string v3, "abs:href"
     invoke-virtual {v2, v3}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
     move-result-object v2
 
@@ -317,6 +317,13 @@
     goto :link_loop
 
     :cond_is_dir
+    const-string v3, "/"
+    invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v3
+    if-nez v3, :cond_really_dir
+    goto :link_loop
+
+    :cond_really_dir
     :try_start
     new-instance v3, Lokhttp3/Request$Builder;
     invoke-direct {v3}, Lokhttp3/Request$Builder;-><init>()V
@@ -2108,7 +2115,7 @@
         
             const-string v0, "Referer"
         
-            const-string v1, "https://old.ftpbd.net/"
+            const-string v1, "https://server3.ftpbd.net/"
         
             invoke-virtual {v6, v0, v1}, Lokhttp3/Headers$Builder;->add(Ljava/lang/String;Ljava/lang/String;)Lokhttp3/Headers$Builder;
         
@@ -2140,7 +2147,7 @@
 
 
 .method protected latestUpdatesParse(Lokhttp3/Response;)Leu/kanade/tachiyomi/animesource/model/AnimesPage;
-    .locals 8
+    .locals 10
     const-string v0, "response"
     invoke-static {p1, v0}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullParameter(Ljava/lang/Object;Ljava/lang/String;)V
     const/4 v0, 0x0
@@ -2176,6 +2183,10 @@
     invoke-interface {v5, v7}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
     const-string v7, "src"
     invoke-virtual {v6, v7}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v7
+    const-string v8, "https://server3.ftpbd.net"
+    const-string v9, "https://old.ftpbd.net"
+    invoke-virtual {v7, v8, v9}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
     move-result-object v7
     invoke-interface {v5, v7}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
     const-string v6, "div.post-image a"
@@ -2321,7 +2332,7 @@
 
     if-nez v2, :cond_filter
 
-    const-string v2, "https://old.ftpbd.net/page/"
+    const-string v2, "https://server3.ftpbd.net/page/"
 
     invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
