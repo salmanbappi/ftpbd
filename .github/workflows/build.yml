@@ -110,12 +110,19 @@ jobs:
           mkdir -p $REPO_DIR/apk
           cp ftpbd-$VERSION_NAME.apk $REPO_DIR/apk/$TARGET_NAME
           
+          # Update icon in the extensions repo
+          mkdir -p $REPO_DIR/icon
+          cp res/mipmap-xxxhdpi/ic_launcher.png $REPO_DIR/icon/$PKG_NAME.png
+          
           cd $REPO_DIR
+          # Fix hardcoded fingerprint in the extensions repo's generation script
+          sed -i 's/c7ebe223044970f2f9738f600dc25c180d3ed03994e088aaf5709338c57b93af/17a9a43374e4951aadb5f33e6d8b10a21e231cdfda050a0473a50254494dc040/g' generate_repo.py
+          
           git config user.name "Gemini Automation"
           git config user.email "gemini@automation.bot"
-          git add apk/$TARGET_NAME
+          git add apk/$TARGET_NAME icon/$PKG_NAME.png generate_repo.py
           # Update index via generate script in the repo
           python generate_repo.py
           git add index.min.json repo.json
-          git commit -m "Update FtpBd to v$VERSION_NAME"
+          git commit -m "Update FtpBd to v$VERSION_NAME and fix fingerprint/icon"
           git push
