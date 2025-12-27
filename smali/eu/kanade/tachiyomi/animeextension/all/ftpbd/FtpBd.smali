@@ -201,7 +201,7 @@
 
     iput-wide v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->time:J
 
-    const-string v0, "https://old.ftpbd.net"
+    const-string v0, "https://server3.ftpbd.net"
 
     iput-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->rick:Ljava/lang/String;
 
@@ -279,7 +279,162 @@
     invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
     check-cast v0, Ljava/util/List;
 
-    const-string v1, "div.entry-content a"
+    const-string v1, "div#fallback table tr, div.entry-content a"
+    invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
+    move-result-object v1
+    invoke-virtual {v1}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
+    move-result-object v1
+
+    :link_loop
+    invoke-interface {v1}, Ljava/util/Iterator;->hasNext()Z
+    move-result v2
+    if-nez v2, :goto_done
+    invoke-interface {v1}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+    move-result-object v2
+    check-cast v2, Lorg/jsoup/nodes/Element;
+
+    const-string v3, "td.fb-n a"
+    invoke-virtual {v2, v3}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    move-result-object v3
+    if-eqz v3, :goto_extracted_a
+    move-object v3, v2
+    :goto_extracted_a
+    const-string v4, "tag"
+    invoke-virtual {v3}, Lorg/jsoup/nodes/Element;->tagName()Ljava/lang/String;
+    move-result-object v4
+    const-string v5, "a"
+    invoke-static {v4, v5}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
+    move-result v4
+    if-nez v4, :goto_skip
+
+    invoke-virtual {v3}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
+    move-result-object v4
+    const-string v5, "Parent Directory"
+    invoke-static {v4, v5}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
+    move-result v5
+    if-eqz v5, :goto_skip
+
+    const-string v5, "abs:href"
+    invoke-virtual {v3, v5}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v2
+
+    const-string v3, ".mkv"
+    invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v3
+    if-nez v3, :cond_is_file
+    const-string v3, ".mp4"
+    invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v3
+    if-eqz v3, :cond_check_dir
+
+    :cond_is_file
+    const-string v3, "https://old.ftpbd.net"
+    const-string v4, "https://server3.ftpbd.net"
+    const/4 v5, 0x0
+    const/4 v6, 0x4
+    const/4 v7, 0x0
+    invoke-static/range {v2 .. v7}, Lkotlin/text/StringsKt;->replace$default(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
+    move-result-object v5
+    new-instance v3, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
+    const-string v4, "Download"
+    const-string v6, ""
+    const-string v7, "File"
+    const-string v8, "Direct"
+    invoke-direct/range {v3 .. v8}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+    invoke-interface {v0, v3}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    goto :link_loop
+
+    :cond_check_dir
+    invoke-interface {v0}, Ljava/util/List;->isEmpty()Z
+    move-result v3
+    if-nez v3, :goto_skip
+
+    const-string v3, "/"
+    invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v3
+    if-nez v3, :cond_really_dir
+    goto :link_loop
+
+    :cond_really_dir
+    :try_start
+    new-instance v3, Lokhttp3/Request$Builder;
+    invoke-direct {v3}, Lokhttp3/Request$Builder;-><init>()V
+    invoke-virtual {v3, v2}, Lokhttp3/Request$Builder;->url(Ljava/lang/String;)Lokhttp3/Request$Builder;
+    move-result-object v3
+    invoke-virtual {v3}, Lokhttp3/Request$Builder;->build()Lokhttp3/Request;
+    move-result-object v3
+    invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getClient()Lokhttp3/OkHttpClient;
+    move-result-object v4
+    invoke-virtual {v4, v3}, Lokhttp3/OkHttpClient;->newCall(Lokhttp3/Request;)Lokhttp3/Call;
+    move-result-object v3
+    invoke-interface {v3}, Lokhttp3/Call;->execute()Lokhttp3/Response;
+    move-result-object v3
+    const/4 v4, 0x0
+    const/4 v5, 0x1
+    invoke-static {v3, v4, v5, v4}, Leu/kanade/tachiyomi/util/JsoupExtensionsKt;->asJsoup$default(Lokhttp3/Response;Ljava/lang/String;ILjava/lang/Object;)Lorg/jsoup/nodes/Document;
+    move-result-object v3
+    const-string v4, "div#fallback table tr"
+    invoke-virtual {v3, v4}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
+    move-result-object v3
+    invoke-virtual {v3}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
+    move-result-object v3
+    :dir_loop
+    invoke-interface {v3}, Ljava/util/Iterator;->hasNext()Z
+    move-result v4
+    if-nez v4, :goto_dir_done
+    invoke-interface {v3}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+    move-result-object v4
+    check-cast v4, Lorg/jsoup/nodes/Element;
+    const-string v5, "td.fb-n a"
+    invoke-virtual {v4, v5}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    move-result-object v5
+    if-nez v5, :cond_has_link
+    goto :dir_loop
+    :cond_has_link
+    const-string v6, "abs:href"
+    invoke-virtual {v5, v6}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v8
+    invoke-virtual {v5}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
+    move-result-object v10
+    const-string v5, ".mkv"
+    invoke-virtual {v8, v5}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v5
+    if-nez v5, :cond_is_dir_file
+    const-string v5, ".mp4"
+    invoke-virtual {v8, v5}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    move-result v5
+    if-eqz v5, :cond_dir_loop
+    :cond_is_dir_file
+    const-string v5, "td.fb-s"
+    invoke-virtual {v4, v5}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    move-result-object v4
+    if-eqz v4, :cond_no_size
+    invoke-virtual {v4}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
+    move-result-object v4
+    goto :goto_has_size
+    :cond_no_size
+    const-string v4, ""
+    :goto_has_size
+    move-object v9, v4
+    new-instance v4, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
+    const-string v7, "Episode"
+    const-string v11, "HD"
+    move-object v6, v4
+    invoke-direct/range {v6 .. v11}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+    invoke-interface {v0, v4}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    goto :dir_loop
+    :goto_dir_done
+    :try_end
+    .catch Ljava/lang/Exception; {:try_start .. :try_end} :catch_dir
+    :catch_dir
+    goto :link_loop
+
+    :goto_skip
+    goto :link_loop
+
+    :goto_done
+    return-object v0
+.end method"div.entry-content a"
     invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     move-result-object v1
     invoke-virtual {v1}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
@@ -306,7 +461,7 @@
     if-eqz v3, :cond_check_dir
 
     :cond_is_file
-    const-string v3, "https://old.ftpbd.net"
+    const-string v3, "https://server3.ftpbd.net"
     const-string v4, "https://server3.ftpbd.net"
     const/4 v5, 0x0
     const/4 v6, 0x4
@@ -1751,7 +1906,7 @@
 .method public getBaseUrl()Ljava/lang/String;
     .locals 1
 
-    const-string v0, "https://old.ftpbd.net"
+    const-string v0, "https://server3.ftpbd.net"
 
     return-object v0
 .end method
@@ -2094,7 +2249,7 @@
         
             const-string v0, "Referer"
         
-            const-string v1, "https://old.ftpbd.net/"
+            const-string v1, "https://server3.ftpbd.net/"
         
             invoke-virtual {v6, v0, v1}, Lokhttp3/Headers$Builder;->add(Ljava/lang/String;Ljava/lang/String;)Lokhttp3/Headers$Builder;
         
@@ -2133,7 +2288,7 @@
     const/4 v1, 0x1
     invoke-static {p1, v0, v1, v0}, Leu/kanade/tachiyomi/util/JsoupExtensionsKt;->asJsoup$default(Lokhttp3/Response;Ljava/lang/String;ILjava/lang/Object;)Lorg/jsoup/nodes/Document;
     move-result-object p1
-    const-string v2, "article.post-item"
+    const-string v2, "div#fallback table tr"
     invoke-virtual {p1, v2}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     move-result-object v2
     new-instance v3, Ljava/util/ArrayList;
@@ -2147,66 +2302,36 @@
     invoke-interface {v2}, Ljava/util/Iterator;->next()Ljava/lang/Object;
     move-result-object v4
     check-cast v4, Lorg/jsoup/nodes/Element;
-    sget-object v5, Leu/kanade/tachiyomi/animesource/model/SAnime;->Companion:Leu/kanade/tachiyomi/animesource/model/SAnime$Companion;
-    invoke-virtual {v5}, Leu/kanade/tachiyomi/animesource/model/SAnime$Companion;->create()Leu/kanade/tachiyomi/animesource/model/SAnime;
+    const-string v5, "td.fb-n a"
+    invoke-virtual {v4, v5}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
     move-result-object v5
-    const-string v6, "div.post-image img"
-    invoke-virtual {v4, v6}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    if-nez v5, :cond_item_ok
+    goto :loop_start
+    :cond_item_ok
+    invoke-virtual {v5}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
     move-result-object v6
-    if-eqz v6, :cond_no_img
-    :cond_img_ok
-    const-string v7, "alt"
-    invoke-virtual {v6, v7}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    const-string v7, "Parent Directory"
+    invoke-static {v6, v7}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
+    move-result v7
+    if-eqz v7, :cond_valid_item
+    goto :loop_start
+    :cond_valid_item
+    sget-object v7, Leu/kanade/tachiyomi/animesource/model/SAnime;->Companion:Leu/kanade/tachiyomi/animesource/model/SAnime$Companion;
+    invoke-virtual {v7}, Leu/kanade/tachiyomi/animesource/model/SAnime$Companion;->create()Leu/kanade/tachiyomi/animesource/model/SAnime;
     move-result-object v7
-    invoke-interface {v5, v7}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
-    const-string v7, "abs:src"
-    invoke-virtual {v6, v7}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
-    move-result-object v7
-    const-string v8, "https://server3.ftpbd.net"
-    const-string v9, "https://old.ftpbd.net"
-    invoke-virtual {v7, v8, v9}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
-    move-result-object v7
-    invoke-interface {v5, v7}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
-    goto :cond_links
-    :cond_no_img
-    const-string v6, "h3.post-title a"
-    invoke-virtual {v4, v6}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
-    move-result-object v6
-    if-nez v6, :cond_title_ok
-    const-string v6, "div.post-content a"
-    invoke-virtual {v4, v6}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
-    move-result-object v6
-    :cond_title_ok
-    if-nez v6, :cond_skip_item
-    invoke-virtual {v6}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
-    move-result-object v7
-    invoke-interface {v5, v7}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
-    :cond_links
-    const-string v6, "div.post-content a"
-    invoke-virtual {v4, v6}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
-    move-result-object v6
-    if-nez v6, :cond_final_link
-    :cond_skip_item
-    goto/16 :loop_start
-    :cond_final_link
-    const-string v7, "abs:href"
-    invoke-virtual {v6, v7}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
-    move-result-object v6
-    invoke-interface {v5, v6}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setUrl(Ljava/lang/String;)V
-    invoke-virtual {v3, v5}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
-    goto/16 :loop_start
+    invoke-interface {v7, v6}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
+    const-string v6, "abs:href"
+    invoke-virtual {v5, v6}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v5
+    invoke-interface {v7, v5}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setUrl(Ljava/lang/String;)V
+    const-string v5, ""
+    invoke-interface {v7, v5}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
+    invoke-virtual {v3, v7}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
+    goto :loop_start
     :cond_done
-    const-string v2, "a.next.page-numbers"
-    invoke-virtual {p1, v2}, Lorg/jsoup/nodes/Document;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
-    move-result-object p1
-    if-eqz p1, :cond_no_next
-    const/4 v0, 0x1
-    goto :goto_ret
-    :cond_no_next
-    const/4 v0, 0x0
-    :goto_ret
     new-instance p1, Leu/kanade/tachiyomi/animesource/model/AnimesPage;
     check-cast v3, Ljava/util/List;
+    const/4 v0, 0x0
     invoke-direct {p1, v3, v0}, Leu/kanade/tachiyomi/animesource/model/AnimesPage;-><init>(Ljava/util/List;Z)V
     return-object p1
 .end method
@@ -2215,44 +2340,10 @@
 
 
 .method protected latestUpdatesRequest(I)Lokhttp3/Request;
-    .locals 4
+    .locals 3
 
-    const/4 v0, 0x1
+    const-string p1, "https://server3.ftpbd.net/FTP-3/%5BToday%27s%20Upload%5D/"
 
-    if-ne p1, v0, :cond_0
-
-    invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getBaseUrl()Ljava/lang/String;
-
-    move-result-object p1
-
-    goto :goto_0
-
-    :cond_0
-    new-instance v0, Ljava/lang/StringBuilder;
-
-    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
-
-    invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getBaseUrl()Ljava/lang/String;
-
-    move-result-object v1
-
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string v1, "/page/"
-
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v0, p1}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
-
-    const-string v1, "/"
-
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object p1
-
-    :goto_0
     invoke-direct {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getGlobalHeaders()Lokhttp3/Headers;
 
     move-result-object v0
@@ -2272,22 +2363,77 @@
 
 
 .method protected popularAnimeParse(Lokhttp3/Response;)Leu/kanade/tachiyomi/animesource/model/AnimesPage;
-    .locals 1
+    .locals 9
     const-string v0, "response"
     invoke-static {p1, v0}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullParameter(Ljava/lang/Object;Ljava/lang/String;)V
-    invoke-virtual {p0, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->latestUpdatesParse(Lokhttp3/Response;)Leu/kanade/tachiyomi/animesource/model/AnimesPage;
-    move-result-object v0
-    return-object v0
+    const/4 v0, 0x0
+    const/4 v1, 0x1
+    invoke-static {p1, v0, v1, v0}, Leu/kanade/tachiyomi/util/JsoupExtensionsKt;->asJsoup$default(Lokhttp3/Response;Ljava/lang/String;ILjava/lang/Object;)Lorg/jsoup/nodes/Document;
+    move-result-object p1
+    const-string v2, "section#one a"
+    invoke-virtual {p1, v2}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
+    move-result-object v2
+    new-instance v3, Ljava/util/ArrayList;
+    invoke-direct {v3}, Ljava/util/ArrayList;-><init>()V
+    invoke-virtual {v2}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
+    move-result-object v2
+    :loop_start
+    invoke-interface {v2}, Ljava/util/Iterator;->hasNext()Z
+    move-result v4
+    if-nez v4, :cond_done
+    invoke-interface {v2}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+    move-result-object v4
+    check-cast v4, Lorg/jsoup/nodes/Element;
+    invoke-virtual {v4}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
+    move-result-object v5
+    invoke-virtual {v5}, Ljava/lang/String;->trim()Ljava/lang/String;
+    move-result-object v5
+    invoke-virtual {v5}, Ljava/lang/String;->isEmpty()Z
+    move-result v6
+    if-eqz v6, :loop_start
+    sget-object v6, Leu/kanade/tachiyomi/animesource/model/SAnime;->Companion:Leu/kanade/tachiyomi/animesource/model/SAnime$Companion;
+    invoke-virtual {v6}, Leu/kanade/tachiyomi/animesource/model/SAnime$Companion;->create()Leu/kanade/tachiyomi/animesource/model/SAnime;
+    move-result-object v6
+    invoke-interface {v6, v5}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
+    const-string v5, "abs:href"
+    invoke-virtual {v4, v5}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v4
+    invoke-interface {v6, v4}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setUrl(Ljava/lang/String;)V
+    const-string v4, ""
+    invoke-interface {v6, v4}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
+    invoke-virtual {v3, v6}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
+    goto :loop_start
+    :cond_done
+    new-instance p1, Leu/kanade/tachiyomi/animesource/model/AnimesPage;
+    check-cast v3, Ljava/util/List;
+    const/4 v0, 0x0
+    invoke-direct {p1, v3, v0}, Leu/kanade/tachiyomi/animesource/model/AnimesPage;-><init>(Ljava/util/List;Z)V
+    return-object p1
 .end method
 
 
 
 
 .method protected popularAnimeRequest(I)Lokhttp3/Request;
-    .locals 1
-    invoke-virtual {p0, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->latestUpdatesRequest(I)Lokhttp3/Request;
+    .locals 3
+
+    invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getBaseUrl()Ljava/lang/String;
+
+    move-result-object p1
+
+    invoke-direct {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getGlobalHeaders()Lokhttp3/Headers;
+
     move-result-object v0
-    return-object v0
+
+    const/4 v1, 0x0
+
+    const/4 v2, 0x4
+
+    invoke-static {p1, v0, v1, v2, v1}, Leu/kanade/tachiyomi/network/RequestsKt;->GET$default(Ljava/lang/String;Lokhttp3/Headers;Lokhttp3/CacheControl;ILjava/lang/Object;)Lokhttp3/Request;
+
+    move-result-object p1
+
+    return-object p1
 .end method
 
 
@@ -2316,9 +2462,14 @@
 .end method
 
 .method protected searchAnimeRequest(ILjava/lang/String;Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;)Lokhttp3/Request;
-    .locals 4
+    .locals 0
 
-    const-string v0, "query"
+    invoke-virtual {p0, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->popularAnimeRequest(I)Lokhttp3/Request;
+
+    move-result-object p1
+
+    return-object p1
+.end method"query"
 
     invoke-static {p2, v0}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullParameter(Ljava/lang/Object;Ljava/lang/String;)V
 

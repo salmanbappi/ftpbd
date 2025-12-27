@@ -26,6 +26,8 @@ def generate():
         
     apk_file = apks[0]
     
+    import time
+    timestamp = int(time.time())
     item = {
         "name": "Aniyomi: FtpBd",
         "pkg": "eu.kanade.tachiyomi.animeextension.all.ftpbd",
@@ -36,7 +38,7 @@ def generate():
         "nsfw": 0,
         "hasReadme": 0,
         "hasChangelog": 0,
-        "icon": "https://raw.githubusercontent.com/salmanbappi/ftpbd/main/res/mipmap-xxxhdpi/ic_launcher.png",
+        "icon": f"https://raw.githubusercontent.com/salmanbappi/extensions-repo/main/icon/eu.kanade.tachiyomi.animeextension.all.ftpbd.png?t={timestamp}",
         "size": get_apk_size(apk_file),
         "sha256": get_file_sha256(apk_file)
     }

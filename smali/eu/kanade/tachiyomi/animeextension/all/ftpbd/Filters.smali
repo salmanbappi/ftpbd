@@ -28,17 +28,7 @@
     invoke-virtual {p0}, Ljava/lang/String;->isEmpty()Z
     move-result v0
     if-nez v0, :cond_check_empty
-    new-instance v0, Ljava/lang/StringBuilder;
-    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
-    const-string v1, "https://old.ftpbd.net/?s="
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-    const-string v1, " "
-    const-string v2, "+"
-    invoke-virtual {p0, v1, v2}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
-    move-result-object p0
-    invoke-virtual {v0, p0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-    move-result-object p0
+    const-string p0, "https://server3.ftpbd.net/"
     return-object p0
 
 :cond_check_empty
@@ -54,47 +44,47 @@
     packed-switch p1, :pswitch_data_0
 
     :pswitch_0
-    const-string p0, "https://old.ftpbd.net/page/1/"
+    const-string p0, "https://server3.ftpbd.net/"
     return-object p0
 
     :pswitch_1
-    const-string p0, "https://old.ftpbd.net/category/movies/english-movies/"
+    const-string p0, "https://server2.ftpbd.net/FTP-2/English%20Movies/"
     return-object p0
 
     :pswitch_2
-    const-string p0, "https://old.ftpbd.net/category/movies/hindi-movies/"
+    const-string p0, "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/"
     return-object p0
 
     :pswitch_3
-    const-string p0, "https://old.ftpbd.net/category/movies/bangla-movies/"
+    const-string p0, "https://server3.ftpbd.net/FTP-3/Bangla%20Collection/BANGLA/"
     return-object p0
 
     :pswitch_4
-    const-string p0, "https://old.ftpbd.net/category/movies/south-indian-movies/"
+    const-string p0, "https://server3.ftpbd.net/FTP-3/South%20Indian%20Movies/"
     return-object p0
 
     :pswitch_5
-    const-string p0, "https://old.ftpbd.net/category/animation-movies/"
+    const-string p0, "https://server5.ftpbd.net/FTP-5/Animation%20Movies/"
     return-object p0
 
     :pswitch_6
-    const-string p0, "https://old.ftpbd.net/category/tv-series/"
+    const-string p0, "https://server4.ftpbd.net/FTP-4/English-Foreign-TV-Series/"
     return-object p0
 
     :pswitch_7
-    const-string p0, "https://old.ftpbd.net/category/animation-movies/anime-cartoon-tv-series/"
+    const-string p0, "https://server5.ftpbd.net/FTP-5/Anime--Cartoon-TV-Series/"
     return-object p0
 
     :pswitch_8
-    const-string p0, "https://old.ftpbd.net/category/hindi-tv-series/"
+    const-string p0, "https://server3.ftpbd.net/FTP-3/Hindi%20TV%20Series/"
     return-object p0
 
     :pswitch_9
-    const-string p0, "https://old.ftpbd.net/category/movies/bangla-movies/bangla-web-series/"
+    const-string p0, "https://server3.ftpbd.net/FTP-3/Bangla%20Collection/BANGLA/Web%20Series/"
     return-object p0
 
     :pswitch_10
-    const-string p0, "https://old.ftpbd.net/category/documentary/"
+    const-string p0, "https://server5.ftpbd.net/FTP-5/Documentary/"
     return-object p0
 
     :pswitch_data_0
