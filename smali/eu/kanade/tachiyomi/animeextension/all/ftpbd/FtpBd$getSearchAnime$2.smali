@@ -17,8 +17,8 @@
 
 # instance fields
 .field final synthetic $query:Ljava/lang/String;
-field label:I
-field final synthetic this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
+.field label:I
+.field final synthetic this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
 
 
 # direct methods
@@ -192,31 +192,35 @@ field final synthetic this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd
 
     check-cast v11, Ljava/lang/CharSequence;
 
-    check-cast v10, Ljava/lang/CharSequence;
+    move-object v12, v10
 
-    const/4 v12, 0x0
+    check-cast v12, Ljava/lang/CharSequence;
 
-    const/4 v13, 0x2
+    const/4 v13, 0x0
 
-    const/4 v14, 0x0
+    const/4 v14, 0x2
 
-    invoke-static {v11, v10, v12, v13, v14}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
+    const/4 v15, 0x0
 
-    move-result v10
+    invoke-static {v11, v12, v13, v14, v15}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
 
-    if-eqz v10, :cond_trim_done
+    move-result v11
+
+    if-eqz v11, :cond_trim_done
 
     invoke-virtual {v9}, Ljava/lang/String;->length()I
 
-    move-result v10
+    move-result v11
 
-    if-le v10, v8, :cond_trim_done
+    const/4 v12, 0x1
 
-    add-int/lit8 v10, v10, -0x1
+    if-le v11, v12, :cond_trim_done
 
-    const/4 v11, 0x0
+    const/4 v12, 0x0
 
-    invoke-virtual {v9, v11, v10}, Ljava/lang/String;->substring(II)Ljava/lang/String;
+    add-int/lit8 v11, v11, -0x1
+
+    invoke-virtual {v9, v12, v11}, Ljava/lang/String;->substring(II)Ljava/lang/String;
 
     move-result-object v9
 
@@ -248,14 +252,6 @@ field final synthetic this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd
     check-cast v11, Leu/kanade/tachiyomi/animesource/model/SAnime;
 
     invoke-interface {v11, v9}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
-
-    new-instance v11, Ljava/lang/StringBuilder;
-
-    invoke-direct {v11}, Ljava/lang/StringBuilder;-><init>()V
-
-    invoke-virtual {v11, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-object v11, v8
 
@@ -468,7 +464,7 @@ field final synthetic this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd
 
     const/4 v1, 0x0
 
-    invoke-direct {v0, p1, v1}, Leu/kanade/tachiyomi/animesource/model/AnimesPage;-><init>(Ljava/util/List;Z)V
+    invoke-direct {v0, p1, v1}, Leu/kanade/tachiyomi/animesource/model/AnimesPage;-><init>(Ljava/util/List;Z)
 
     return-object v0
 
