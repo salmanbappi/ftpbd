@@ -53,13 +53,7 @@
 
     invoke-virtual {v4, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v5, "/"
-
-    invoke-virtual {v4, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v4, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string v5, "/"
+    const-string v5, "/_h5ai/public/index.php"
 
     invoke-virtual {v4, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
@@ -174,7 +168,7 @@
 
     move-result-object v7
 
-    const-string v8, "\"href\":\"([^\"]+)\"[^}]*\"size\":null"
+    const-string v8, "\"href\":\"([^\"]+)\""
 
     const/4 v9, 0x2
 
@@ -334,30 +328,8 @@
 
     invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v8, "9"
-
-    check-cast v8, Ljava/lang/CharSequence;
-
-    const/4 v12, 0x0
-
-    const/4 v13, 0x2
-
-    const/4 v14, 0x0
-
-    invoke-static {v2, v8, v12, v13, v14}, Lkotlin/text/StringsKt;->contains$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
-
-    move-result v8
-
-    if-eqz v8, :cond_use_al
-
     const-string v8, "a11.jpg"
 
-    goto :goto_thumb
-
-    :cond_use_al
-    const-string v8, "a_AL_.jpg"
-
-    :goto_thumb
     invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
