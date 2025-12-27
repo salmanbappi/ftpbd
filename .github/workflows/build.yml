@@ -24,11 +24,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'gradle'
 
       - name: Build with Gradle
-        run: |
-          chmod +x gradlew
-          ./gradlew :app:assembleRelease
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: :app:assembleRelease
 
       - name: Get Version
         run: |
@@ -40,7 +41,7 @@ jobs:
         with:
           tag_name: v${{ env.VERSION_NAME }}
           name: Release v${{ env.VERSION_NAME }}
-          files: app/build/outputs/apk/release/app-release-unsigned.apk
+          files: app/build/outputs/apk/release/*.apk
           draft: false
           prerelease: false
           generate_release_notes: true
