@@ -17,21 +17,24 @@
 
 # instance fields
 .field final synthetic $query:Ljava/lang/String;
+.field final synthetic $filters:Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;
 .field label:I
 .field final synthetic this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
 
 
 # direct methods
-.method constructor <init>(Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;Ljava/lang/String;Lkotlin/coroutines/Continuation;)V
+.method constructor <init>(Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;Ljava/lang/String;Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;Lkotlin/coroutines/Continuation;)V
     .locals 0
 
     iput-object p1, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
 
     iput-object p2, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$query:Ljava/lang/String;
 
+    iput-object p3, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$filters:Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;
+
     const/4 p1, 0x2
 
-    invoke-direct {p0, p1, p3}, Lkotlin/coroutines/jvm/internal/SuspendLambda;-><init>(ILkotlin/coroutines/Continuation;)V
+    invoke-direct {p0, p1, p4}, Lkotlin/coroutines/jvm/internal/SuspendLambda;-><init>(ILkotlin/coroutines/Continuation;)V
 
     return-void
 .end method
@@ -65,13 +68,61 @@
 
     invoke-direct {v5}, Ljava/lang/StringBuilder;-><init>()V
 
-    const-string v6, "{\"action\":\"get\",\"search\":{\"href\":\"/"
+    const-string v6, "{\"action\":\"get\",\"search\":{\"href\":\""
 
     invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    const-string v6, "/"
+
+    move-object v7, v2
+
+    check-cast v7, Ljava/lang/CharSequence;
+
+    const/4 v8, 0x0
+
+    const/4 v9, 0x2
+
+    const/4 v10, 0x0
+
+    invoke-static {v7, v6, v8, v9, v10}, Lkotlin/text/StringsKt;->startsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
+
+    move-result v6
+
+    if-nez v6, :cond_add_pre_slash
+
+    const-string v6, "/"
+
+    invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+:cond_add_pre_slash
 
     invoke-virtual {v5, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     const-string v6, "/\",\"pattern\":\""
+
+    move-object v7, v2
+
+    check-cast v7, Ljava/lang/CharSequence;
+
+    const-string v8, "/"
+
+    check-cast v8, Ljava/lang/CharSequence;
+
+    const/4 v11, 0x0
+
+    const/4 v12, 0x2
+
+    const/4 v13, 0x0
+
+    invoke-static {v7, v8, v11, v12, v13}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
+
+    move-result v7
+
+    if-eqz v7, :cond_add_pat_pre
+
+    const-string v6, "pattern\":\""
+
+:cond_add_pat_pre
 
     invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
@@ -227,6 +278,7 @@
     goto :cond_trim_loop
 
     :cond_trim_done
+
     const-string v10, "/"
 
     invoke-static {v9, v10, v9}, Lkotlin/text/StringsKt;->substringAfterLast(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
@@ -253,39 +305,6 @@
 
     invoke-interface {v11, v9}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
 
-    move-object v11, v8
-
-    const-string v12, "/"
-
-    check-cast v12, Ljava/lang/CharSequence;
-
-    const/4 v13, 0x0
-
-    const/4 v14, 0x2
-
-    const/4 v15, 0x0
-
-    invoke-static {v11, v12, v13, v14, v15}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
-
-    move-result v11
-
-    if-nez v11, :cond_add_slash
-
-    new-instance v11, Ljava/lang/StringBuilder;
-
-    invoke-direct {v11}, Ljava/lang/StringBuilder;-><init>()V
-
-    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    const-string v8, "/"
-
-    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v8
-
-    :cond_add_slash
     new-instance v11, Ljava/lang/StringBuilder;
 
     invoke-direct {v11}, Ljava/lang/StringBuilder;-><init>()V
@@ -310,11 +329,43 @@
 
     invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
+    const-string v8, "/"
+
+    move-object v12, v8
+
+    check-cast v12, Ljava/lang/CharSequence;
+
+    const/4 v13, 0x0
+
+    const/4 v14, 0x2
+
+    const/4 v15, 0x0
+
+    move-object v11, v10
+
+    invoke-interface {v11}, Leu/kanade/tachiyomi/animesource/model/SAnime;->getUrl()Ljava/lang/String;
+
+    move-result-object v11
+
+    check-cast v11, Ljava/lang/CharSequence;
+
+    invoke-static {v11, v12, v13, v14, v15}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
+
+    move-result v11
+
+    if-nez v11, :cond_add_url_slash
+
+    const-string v11, "/"
+
+    invoke-virtual {v5, v11}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+:cond_add_url_slash
+
     const-string v8, "a11.jpg"
 
-    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v5, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-virtual {v5}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
     move-result-object v8
 
@@ -356,7 +407,7 @@
 
 # virtual methods
 .method public final create(Ljava/lang/Object;Lkotlin/coroutines/Continuation;)Lkotlin/coroutines/Continuation;
-    .locals 3
+    .locals 4
 
     new-instance p1, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;
 
@@ -364,7 +415,9 @@
 
     iget-object v1, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$query:Ljava/lang/String;
 
-    invoke-direct {p1, v0, v1, p2}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;-><init>(Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;Ljava/lang/String;Lkotlin/coroutines/Continuation;)V
+    iget-object v2, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$filters:Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;
+
+    invoke-direct {p1, v0, v1, v2, p2}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;-><init>(Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;Ljava/lang/String;Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;Lkotlin/coroutines/Continuation;)V
 
     check-cast p1, Lkotlin/coroutines/Continuation;
 
@@ -404,7 +457,7 @@
 .end method
 
 .method public final invokeSuspend(Ljava/lang/Object;)Ljava/lang/Object;
-    .locals 4
+    .locals 6
 
     invoke-static {}, Lkotlin/coroutines/intrinsics/IntrinsicsKt;->getCOROUTINE_SUSPENDED()Ljava/lang/Object;
 
@@ -417,6 +470,22 @@
     new-instance p1, Ljava/util/ArrayList;
 
     invoke-direct {p1}, Ljava/util/ArrayList;-><init>()V
+
+    iget-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$filters:Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;
+
+    const-string v1, ""
+
+    invoke-static {v1, v0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/Filters;->getUrl(Ljava/lang/String;Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;)Ljava/lang/String;
+
+    move-result-object v0
+
+    const-string v1, "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/"
+
+    invoke-static {v0, v1}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
+
+    move-result v1
+
+    if-eqz v1, :cond_global
 
     const-string v0, "https://server2.ftpbd.net"
 
@@ -442,11 +511,45 @@
 
     invoke-direct {p0, v0, v1, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
 
-    const-string v0, "https://server7.ftpbd.net"
+    goto :goto_sort
 
-    const-string v1, "FTP-7"
+:cond_global
 
-    invoke-direct {p0, v0, v1, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
+    invoke-static {v0}, Lokhttp3/HttpUrl;->parse(Ljava/lang/String;)Lokhttp3/HttpUrl;
+
+    move-result-object v1
+
+    new-instance v2, Ljava/lang/StringBuilder;
+
+    invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v1}, Lokhttp3/HttpUrl;->scheme()Ljava/lang/String;
+
+    move-result-object v3
+
+    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    const-string v3, "://"
+
+    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v1}, Lokhttp3/HttpUrl;->host()Ljava/lang/String;
+
+    move-result-object v3
+
+    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v2}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v2
+
+    invoke-virtual {v1}, Lokhttp3/HttpUrl;->encodedPath()Ljava/lang/String;
+
+    move-result-object v1
+
+    invoke-direct {p0, v2, v1, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
+
+:goto_sort
 
     iget-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
 
