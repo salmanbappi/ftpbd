@@ -50,7 +50,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     private val tmdbApiKey: String
-        get() = preferences.getString("tmdb_api_key", "") ?: ""
+        get() = preferences.getString("tmdb_api_key", "")?.takeIf { it.isNotBlank() } ?: "5cd49aeaf94161b1e7badb23820f6ea9"
 
     // ============================== Popular ===============================
     override fun popularAnimeRequest(page: Int): Request = GET("https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/")
