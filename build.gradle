@@ -18,16 +18,12 @@ allprojects {
     }
 
     configurations.all {
-        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
-        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
-
-        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-            if (details.requested.group == 'org.jetbrains.kotlin') {
-                details.useVersion '2.0.0'
-            }
-            if (details.requested.group == 'androidx.annotation' && details.requested.name == 'annotation') {
-                details.useVersion '1.7.1'
-            }
+        resolutionStrategy {
+            force 'org.jetbrains.kotlin:kotlin-stdlib:2.0.0'
+            force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.0'
+            force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.0.0'
+            force 'org.jetbrains.kotlin:kotlin-reflect:2.0.0'
+            force 'androidx.annotation:annotation:1.7.1'
         }
     }
 }

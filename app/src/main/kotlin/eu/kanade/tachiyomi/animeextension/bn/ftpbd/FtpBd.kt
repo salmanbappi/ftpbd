@@ -158,7 +158,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                        val img = document.selectFirst("img[src~=(?i)a11|a_al|poster|banner|thumb], img:not([src~=(?i)back|folder|parent|icon|/icons/])")
                        var thumb = img?.attr("abs:src")
                        if (thumb.isNullOrBlank()) {
-                           thumb = document.selectFirst("a[href~=(?i)\.(jpg|jpeg|png|webp)]:not([href~=(?i)back|folder|parent|icon])")?.attr("abs:href")
+                           thumb = document.selectFirst("a[href~=(?i)\\.(jpg|jpeg|png|webp)]:not([href~=(?i)back|folder|parent|icon])")?.attr("abs:href")
                        }
                        thumbnail_url = thumb
                    }

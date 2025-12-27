@@ -1,0 +1,461 @@
+build	Set up job	﻿2025-12-27T18:09:23.9509226Z Current runner version: '2.330.0'
+build	Set up job	2025-12-27T18:09:23.9531417Z ##[group]Runner Image Provisioner
+build	Set up job	2025-12-27T18:09:23.9532416Z Hosted Compute Agent
+build	Set up job	2025-12-27T18:09:23.9533148Z Version: 20251211.462
+build	Set up job	2025-12-27T18:09:23.9533714Z Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
+build	Set up job	2025-12-27T18:09:23.9534317Z Build Date: 2025-12-11T16:28:49Z
+build	Set up job	2025-12-27T18:09:23.9534955Z Worker ID: {3a9296ed-63be-42a9-94cd-856432cc7377}
+build	Set up job	2025-12-27T18:09:23.9535555Z ##[endgroup]
+build	Set up job	2025-12-27T18:09:23.9535993Z ##[group]Operating System
+build	Set up job	2025-12-27T18:09:23.9536541Z Ubuntu
+build	Set up job	2025-12-27T18:09:23.9536941Z 24.04.3
+build	Set up job	2025-12-27T18:09:23.9537358Z LTS
+build	Set up job	2025-12-27T18:09:23.9537782Z ##[endgroup]
+build	Set up job	2025-12-27T18:09:23.9538226Z ##[group]Runner Image
+build	Set up job	2025-12-27T18:09:23.9538687Z Image: ubuntu-24.04
+build	Set up job	2025-12-27T18:09:23.9539160Z Version: 20251215.174.1
+build	Set up job	2025-12-27T18:09:23.9540060Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251215.174/images/ubuntu/Ubuntu2404-Readme.md
+build	Set up job	2025-12-27T18:09:23.9541239Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251215.174
+build	Set up job	2025-12-27T18:09:23.9542437Z ##[endgroup]
+build	Set up job	2025-12-27T18:09:23.9543340Z ##[group]GITHUB_TOKEN Permissions
+build	Set up job	2025-12-27T18:09:23.9545113Z Contents: write
+build	Set up job	2025-12-27T18:09:23.9545626Z Metadata: read
+build	Set up job	2025-12-27T18:09:23.9546068Z ##[endgroup]
+build	Set up job	2025-12-27T18:09:23.9547955Z Secret source: Actions
+build	Set up job	2025-12-27T18:09:23.9548518Z Prepare workflow directory
+build	Set up job	2025-12-27T18:09:23.9936953Z Prepare all required actions
+build	Set up job	2025-12-27T18:09:23.9993285Z Getting action download info
+build	Set up job	2025-12-27T18:09:24.3568827Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+build	Set up job	2025-12-27T18:09:24.4641805Z Download action repository 'actions/setup-java@v4' (SHA:c1e323688fd81a25caa38c78aa6df2d33d3e20d9)
+build	Set up job	2025-12-27T18:09:24.9084336Z Download action repository 'gradle/gradle-build-action@v3' (SHA:ac2d340dc04d9e1113182899e983b5400c17cda1)
+build	Set up job	2025-12-27T18:09:25.2458958Z Download action repository 'softprops/action-gh-release@v2' (SHA:a06a81a03ee405af7f2048a818ed3f03bbf83c7b)
+build	Set up job	2025-12-27T18:09:26.0913749Z Getting action download info
+build	Set up job	2025-12-27T18:09:26.2068172Z Download action repository 'gradle/actions@v3.5.0' (SHA:d9c87d481d55275bb5441eef3fe0e46805f9ef70)
+build	Set up job	2025-12-27T18:09:26.9322381Z Complete job name: build
+build	Checkout code	﻿2025-12-27T18:09:26.9893306Z ##[group]Run actions/checkout@v4
+build	Checkout code	2025-12-27T18:09:26.9893951Z with:
+build	Checkout code	2025-12-27T18:09:26.9894151Z   fetch-depth: 0
+build	Checkout code	2025-12-27T18:09:26.9894391Z   repository: salmanbappi/ftpbd
+build	Checkout code	2025-12-27T18:09:26.9894901Z   token: ***
+build	Checkout code	2025-12-27T18:09:26.9895088Z   ssh-strict: true
+build	Checkout code	2025-12-27T18:09:26.9895295Z   ssh-user: git
+build	Checkout code	2025-12-27T18:09:26.9895503Z   persist-credentials: true
+build	Checkout code	2025-12-27T18:09:26.9895746Z   clean: true
+build	Checkout code	2025-12-27T18:09:26.9895956Z   sparse-checkout-cone-mode: true
+build	Checkout code	2025-12-27T18:09:26.9896238Z   fetch-tags: false
+build	Checkout code	2025-12-27T18:09:26.9896451Z   show-progress: true
+build	Checkout code	2025-12-27T18:09:26.9896651Z   lfs: false
+build	Checkout code	2025-12-27T18:09:26.9896826Z   submodules: false
+build	Checkout code	2025-12-27T18:09:26.9897042Z   set-safe-directory: true
+build	Checkout code	2025-12-27T18:09:26.9897418Z ##[endgroup]
+build	Checkout code	2025-12-27T18:09:27.0920240Z Syncing repository: salmanbappi/ftpbd
+build	Checkout code	2025-12-27T18:09:27.0921750Z ##[group]Getting Git version info
+build	Checkout code	2025-12-27T18:09:27.0922124Z Working directory is '/home/runner/work/ftpbd/ftpbd'
+build	Checkout code	2025-12-27T18:09:27.0922795Z [command]/usr/bin/git version
+build	Checkout code	2025-12-27T18:09:27.0982980Z git version 2.52.0
+build	Checkout code	2025-12-27T18:09:27.1007196Z ##[endgroup]
+build	Checkout code	2025-12-27T18:09:27.1023651Z Temporarily overriding HOME='/home/runner/work/_temp/ca5b7e9a-876f-4f69-a4a7-38d914ab7d40' before making global git config changes
+build	Checkout code	2025-12-27T18:09:27.1025700Z Adding repository directory to the temporary git global config as a safe directory
+build	Checkout code	2025-12-27T18:09:27.1038660Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ftpbd/ftpbd
+build	Checkout code	2025-12-27T18:09:27.1075050Z Deleting the contents of '/home/runner/work/ftpbd/ftpbd'
+build	Checkout code	2025-12-27T18:09:27.1078511Z ##[group]Initializing the repository
+build	Checkout code	2025-12-27T18:09:27.1082979Z [command]/usr/bin/git init /home/runner/work/ftpbd/ftpbd
+build	Checkout code	2025-12-27T18:09:27.1190272Z hint: Using 'master' as the name for the initial branch. This default branch name
+build	Checkout code	2025-12-27T18:09:27.1191260Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+build	Checkout code	2025-12-27T18:09:27.1191898Z hint: to use in all of your new repositories, which will suppress this warning,
+build	Checkout code	2025-12-27T18:09:27.1192575Z hint: call:
+build	Checkout code	2025-12-27T18:09:27.1193223Z hint:
+build	Checkout code	2025-12-27T18:09:27.1193569Z hint: 	git config --global init.defaultBranch <name>
+build	Checkout code	2025-12-27T18:09:27.1193963Z hint:
+build	Checkout code	2025-12-27T18:09:27.1194440Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+build	Checkout code	2025-12-27T18:09:27.1195168Z hint: 'development'. The just-created branch can be renamed via this command:
+build	Checkout code	2025-12-27T18:09:27.1195768Z hint:
+build	Checkout code	2025-12-27T18:09:27.1196071Z hint: 	git branch -m <name>
+build	Checkout code	2025-12-27T18:09:27.1196413Z hint:
+build	Checkout code	2025-12-27T18:09:27.1196899Z hint: Disable this message with "git config set advice.defaultBranchName false"
+build	Checkout code	2025-12-27T18:09:27.1197780Z Initialized empty Git repository in /home/runner/work/ftpbd/ftpbd/.git/
+build	Checkout code	2025-12-27T18:09:27.1205889Z [command]/usr/bin/git remote add origin https://github.com/salmanbappi/ftpbd
+build	Checkout code	2025-12-27T18:09:27.1237280Z ##[endgroup]
+build	Checkout code	2025-12-27T18:09:27.1237741Z ##[group]Disabling automatic garbage collection
+build	Checkout code	2025-12-27T18:09:27.1241697Z [command]/usr/bin/git config --local gc.auto 0
+build	Checkout code	2025-12-27T18:09:27.1266833Z ##[endgroup]
+build	Checkout code	2025-12-27T18:09:27.1267220Z ##[group]Setting up auth
+build	Checkout code	2025-12-27T18:09:27.1273958Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build	Checkout code	2025-12-27T18:09:27.1299438Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build	Checkout code	2025-12-27T18:09:27.1609744Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build	Checkout code	2025-12-27T18:09:27.1637004Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build	Checkout code	2025-12-27T18:09:27.1818028Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build	Checkout code	2025-12-27T18:09:27.1843882Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build	Checkout code	2025-12-27T18:09:27.2030227Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+build	Checkout code	2025-12-27T18:09:27.2059834Z ##[endgroup]
+build	Checkout code	2025-12-27T18:09:27.2060370Z ##[group]Fetching the repository
+build	Checkout code	2025-12-27T18:09:27.2068762Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+build	Checkout code	2025-12-27T18:09:27.5954568Z From https://github.com/salmanbappi/ftpbd
+build	Checkout code	2025-12-27T18:09:27.5955733Z  * [new branch]      main       -> origin/main
+build	Checkout code	2025-12-27T18:09:27.5961960Z  * [new branch]      repo       -> origin/repo
+build	Checkout code	2025-12-27T18:09:27.5962602Z  * [new tag]         v1.2       -> v1.2
+build	Checkout code	2025-12-27T18:09:27.5963015Z  * [new tag]         v1.3       -> v1.3
+build	Checkout code	2025-12-27T18:09:27.5963394Z  * [new tag]         v1.4       -> v1.4
+build	Checkout code	2025-12-27T18:09:27.5963771Z  * [new tag]         v1.5       -> v1.5
+build	Checkout code	2025-12-27T18:09:27.5964155Z  * [new tag]         v1.6       -> v1.6
+build	Checkout code	2025-12-27T18:09:27.5964371Z  * [new tag]         v1.7       -> v1.7
+build	Checkout code	2025-12-27T18:09:27.5964599Z  * [new tag]         v14.1002   -> v14.1002
+build	Checkout code	2025-12-27T18:09:27.5964829Z  * [new tag]         v14.1003   -> v14.1003
+build	Checkout code	2025-12-27T18:09:27.5965061Z  * [new tag]         v14.1004   -> v14.1004
+build	Checkout code	2025-12-27T18:09:27.5965282Z  * [new tag]         v14.1005   -> v14.1005
+build	Checkout code	2025-12-27T18:09:27.5965513Z  * [new tag]         v14.1006   -> v14.1006
+build	Checkout code	2025-12-27T18:09:27.5965752Z  * [new tag]         v14.1009   -> v14.1009
+build	Checkout code	2025-12-27T18:09:27.5965970Z  * [new tag]         v14.1010   -> v14.1010
+build	Checkout code	2025-12-27T18:09:27.5966192Z  * [new tag]         v14.1011   -> v14.1011
+build	Checkout code	2025-12-27T18:09:27.5966407Z  * [new tag]         v14.1012   -> v14.1012
+build	Checkout code	2025-12-27T18:09:27.5966838Z  * [new tag]         v14.1013   -> v14.1013
+build	Checkout code	2025-12-27T18:09:27.5967056Z  * [new tag]         v14.1014   -> v14.1014
+build	Checkout code	2025-12-27T18:09:27.5967282Z  * [new tag]         v14.1015   -> v14.1015
+build	Checkout code	2025-12-27T18:09:27.5967508Z  * [new tag]         v14.1016   -> v14.1016
+build	Checkout code	2025-12-27T18:09:27.5967731Z  * [new tag]         v14.1017   -> v14.1017
+build	Checkout code	2025-12-27T18:09:27.5967955Z  * [new tag]         v14.1018   -> v14.1018
+build	Checkout code	2025-12-27T18:09:27.5968173Z  * [new tag]         v14.1019   -> v14.1019
+build	Checkout code	2025-12-27T18:09:27.5968398Z  * [new tag]         v14.1020   -> v14.1020
+build	Checkout code	2025-12-27T18:09:27.5968625Z  * [new tag]         v14.1021   -> v14.1021
+build	Checkout code	2025-12-27T18:09:27.5968853Z  * [new tag]         v14.1022   -> v14.1022
+build	Checkout code	2025-12-27T18:09:27.5969068Z  * [new tag]         v14.1023   -> v14.1023
+build	Checkout code	2025-12-27T18:09:27.5969351Z  * [new tag]         v14.1026   -> v14.1026
+build	Checkout code	2025-12-27T18:09:27.5969582Z  * [new tag]         v14.1027   -> v14.1027
+build	Checkout code	2025-12-27T18:09:27.5969798Z  * [new tag]         v14.1067   -> v14.1067
+build	Checkout code	2025-12-27T18:09:27.5970027Z  * [new tag]         v14.1069   -> v14.1069
+build	Checkout code	2025-12-27T18:09:27.5970246Z  * [new tag]         v14.1073   -> v14.1073
+build	Checkout code	2025-12-27T18:09:27.5970474Z  * [new tag]         v14.1076   -> v14.1076
+build	Checkout code	2025-12-27T18:09:27.5970690Z  * [new tag]         v14.1077   -> v14.1077
+build	Checkout code	2025-12-27T18:09:27.5970918Z  * [new tag]         v14.1101   -> v14.1101
+build	Checkout code	2025-12-27T18:09:27.5971133Z  * [new tag]         v14.1261   -> v14.1261
+build	Checkout code	2025-12-27T18:09:27.5971361Z  * [new tag]         v14.1262   -> v14.1262
+build	Checkout code	2025-12-27T18:09:27.5971592Z  * [new tag]         v14.1263   -> v14.1263
+build	Checkout code	2025-12-27T18:09:27.5971816Z  * [new tag]         v14.1264   -> v14.1264
+build	Checkout code	2025-12-27T18:09:27.5972047Z  * [new tag]         v14.1265   -> v14.1265
+build	Checkout code	2025-12-27T18:09:27.5972555Z  * [new tag]         v14.1268   -> v14.1268
+build	Checkout code	2025-12-27T18:09:27.5972800Z  * [new tag]         v14.1269   -> v14.1269
+build	Checkout code	2025-12-27T18:09:27.5973021Z  * [new tag]         v14.1271   -> v14.1271
+build	Checkout code	2025-12-27T18:09:27.5973256Z  * [new tag]         v14.1275   -> v14.1275
+build	Checkout code	2025-12-27T18:09:27.5973484Z  * [new tag]         v14.1276   -> v14.1276
+build	Checkout code	2025-12-27T18:09:27.5973720Z  * [new tag]         v14.1277   -> v14.1277
+build	Checkout code	2025-12-27T18:09:27.5973966Z  * [new tag]         v14.1278   -> v14.1278
+build	Checkout code	2025-12-27T18:09:27.5974189Z  * [new tag]         v14.1279   -> v14.1279
+build	Checkout code	2025-12-27T18:09:27.5974549Z  * [new tag]         v14.1281   -> v14.1281
+build	Checkout code	2025-12-27T18:09:27.5974768Z  * [new tag]         v14.1282   -> v14.1282
+build	Checkout code	2025-12-27T18:09:27.5974994Z  * [new tag]         v14.1283   -> v14.1283
+build	Checkout code	2025-12-27T18:09:27.5975213Z  * [new tag]         v14.1284   -> v14.1284
+build	Checkout code	2025-12-27T18:09:27.5975439Z  * [new tag]         v14.1285   -> v14.1285
+build	Checkout code	2025-12-27T18:09:27.5975658Z  * [new tag]         v14.1286   -> v14.1286
+build	Checkout code	2025-12-27T18:09:27.6024019Z [command]/usr/bin/git branch --list --remote origin/main
+build	Checkout code	2025-12-27T18:09:27.6049210Z   origin/main
+build	Checkout code	2025-12-27T18:09:27.6059439Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+build	Checkout code	2025-12-27T18:09:27.6079857Z dffea239c2a1010613d76eb7df921de1dd010ce7
+build	Checkout code	2025-12-27T18:09:27.6083520Z ##[endgroup]
+build	Checkout code	2025-12-27T18:09:27.6084016Z ##[group]Determining the checkout info
+build	Checkout code	2025-12-27T18:09:27.6086462Z ##[endgroup]
+build	Checkout code	2025-12-27T18:09:27.6091919Z [command]/usr/bin/git sparse-checkout disable
+build	Checkout code	2025-12-27T18:09:27.6132854Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+build	Checkout code	2025-12-27T18:09:27.6158331Z ##[group]Checking out the ref
+build	Checkout code	2025-12-27T18:09:27.6164798Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+build	Checkout code	2025-12-27T18:09:27.6253899Z Switched to a new branch 'main'
+build	Checkout code	2025-12-27T18:09:27.6255458Z branch 'main' set up to track 'origin/main'.
+build	Checkout code	2025-12-27T18:09:27.6261125Z ##[endgroup]
+build	Checkout code	2025-12-27T18:09:27.6298382Z [command]/usr/bin/git log -1 --format=%H
+build	Checkout code	2025-12-27T18:09:27.6318541Z dffea239c2a1010613d76eb7df921de1dd010ce7
+build	Set up JDK 17	﻿2025-12-27T18:09:27.6548199Z ##[group]Run actions/setup-java@v4
+build	Set up JDK 17	2025-12-27T18:09:27.6548599Z with:
+build	Set up JDK 17	2025-12-27T18:09:27.6548824Z   java-version: 17
+build	Set up JDK 17	2025-12-27T18:09:27.6549081Z   distribution: temurin
+build	Set up JDK 17	2025-12-27T18:09:27.6549421Z   cache: gradle
+build	Set up JDK 17	2025-12-27T18:09:27.6549737Z   java-package: jdk
+build	Set up JDK 17	2025-12-27T18:09:27.6549963Z   check-latest: false
+build	Set up JDK 17	2025-12-27T18:09:27.6550218Z   server-id: github
+build	Set up JDK 17	2025-12-27T18:09:27.6550526Z   server-username: GITHUB_ACTOR
+build	Set up JDK 17	2025-12-27T18:09:27.6550794Z   server-password: GITHUB_TOKEN
+build	Set up JDK 17	2025-12-27T18:09:27.6551075Z   overwrite-settings: true
+build	Set up JDK 17	2025-12-27T18:09:27.6551433Z   job-status: success
+build	Set up JDK 17	2025-12-27T18:09:27.6551847Z   token: ***
+build	Set up JDK 17	2025-12-27T18:09:27.6552070Z ##[endgroup]
+build	Set up JDK 17	2025-12-27T18:09:27.8403355Z ##[group]Installed distributions
+build	Set up JDK 17	2025-12-27T18:09:27.8575926Z Resolved Java 17.0.17+10 from tool-cache
+build	Set up JDK 17	2025-12-27T18:09:27.8576626Z Setting Java 17.0.17+10 as the default
+build	Set up JDK 17	2025-12-27T18:09:27.8589280Z Creating toolchains.xml for JDK version 17 from temurin
+build	Set up JDK 17	2025-12-27T18:09:27.8659845Z Writing to /home/runner/.m2/toolchains.xml
+build	Set up JDK 17	2025-12-27T18:09:27.8660507Z 
+build	Set up JDK 17	2025-12-27T18:09:27.8660791Z Java configuration:
+build	Set up JDK 17	2025-12-27T18:09:27.8661284Z   Distribution: temurin
+build	Set up JDK 17	2025-12-27T18:09:27.8663637Z   Version: 17.0.17+10
+build	Set up JDK 17	2025-12-27T18:09:27.8664782Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.17-10/x64
+build	Set up JDK 17	2025-12-27T18:09:27.8666174Z 
+build	Set up JDK 17	2025-12-27T18:09:27.8666794Z ##[endgroup]
+build	Set up JDK 17	2025-12-27T18:09:27.8684560Z Creating settings.xml with server-id: github
+build	Set up JDK 17	2025-12-27T18:09:27.8688269Z Writing to /home/runner/.m2/settings.xml
+build	Set up JDK 17	2025-12-27T18:09:28.0543582Z gradle cache is not found
+build	Build with Gradle	﻿2025-12-27T18:09:28.0924378Z ##[group]Run gradle/gradle-build-action@v3
+build	Build with Gradle	2025-12-27T18:09:28.0924716Z with:
+build	Build with Gradle	2025-12-27T18:09:28.0924884Z   gradle-version: 8.5
+build	Build with Gradle	2025-12-27T18:09:28.0925088Z   arguments: :app:assembleRelease
+build	Build with Gradle	2025-12-27T18:09:28.0925308Z   cache-disabled: false
+build	Build with Gradle	2025-12-27T18:09:28.0925508Z   cache-read-only: false
+build	Build with Gradle	2025-12-27T18:09:28.0925710Z   cache-write-only: false
+build	Build with Gradle	2025-12-27T18:09:28.0925919Z   cache-overwrite-existing: false
+build	Build with Gradle	2025-12-27T18:09:28.0926190Z   gradle-home-cache-includes: caches
+build	Build with Gradle	notifications
+build	Build with Gradle	
+build	Build with Gradle	2025-12-27T18:09:28.0926495Z   gradle-home-cache-cleanup: false
+build	Build with Gradle	2025-12-27T18:09:28.0926749Z   add-job-summary: always
+build	Build with Gradle	2025-12-27T18:09:28.0926969Z   add-job-summary-as-pr-comment: never
+build	Build with Gradle	2025-12-27T18:09:28.0927211Z   dependency-graph: disabled
+build	Build with Gradle	2025-12-27T18:09:28.0927454Z   dependency-graph-continue-on-failure: true
+build	Build with Gradle	2025-12-27T18:09:28.0927704Z   build-scan-publish: false
+build	Build with Gradle	2025-12-27T18:09:28.0927923Z   validate-wrappers: false
+build	Build with Gradle	2025-12-27T18:09:28.0928126Z   generate-job-summary: true
+build	Build with Gradle	2025-12-27T18:09:28.0928354Z   gradle-home-cache-strict-match: false
+build	Build with Gradle	2025-12-27T18:09:28.0928641Z   workflow-job-context: null
+build	Build with Gradle	2025-12-27T18:09:28.0928999Z   github-token: ***
+build	Build with Gradle	2025-12-27T18:09:28.0929168Z env:
+build	Build with Gradle	2025-12-27T18:09:28.0929436Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.17-10/x64
+build	Build with Gradle	2025-12-27T18:09:28.0929865Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.17-10/x64
+build	Build with Gradle	2025-12-27T18:09:28.0930180Z ##[endgroup]
+build	Build with Gradle	2025-12-27T18:09:28.1144876Z ##[group]Run gradle/actions/setup-gradle@v3.5.0
+build	Build with Gradle	2025-12-27T18:09:28.1145189Z with:
+build	Build with Gradle	2025-12-27T18:09:28.1145352Z   gradle-version: 8.5
+build	Build with Gradle	2025-12-27T18:09:28.1145558Z   cache-disabled: false
+build	Build with Gradle	2025-12-27T18:09:28.1145755Z   cache-read-only: false
+build	Build with Gradle	2025-12-27T18:09:28.1145946Z   cache-write-only: false
+build	Build with Gradle	2025-12-27T18:09:28.1146154Z   cache-overwrite-existing: false
+build	Build with Gradle	2025-12-27T18:09:28.1146408Z   gradle-home-cache-includes: caches
+build	Build with Gradle	notifications
+build	Build with Gradle	
+build	Build with Gradle	2025-12-27T18:09:28.1146701Z   gradle-home-cache-cleanup: false
+build	Build with Gradle	2025-12-27T18:09:28.1146920Z   add-job-summary: always
+build	Build with Gradle	2025-12-27T18:09:28.1147147Z   add-job-summary-as-pr-comment: never
+build	Build with Gradle	2025-12-27T18:09:28.1147386Z   dependency-graph: disabled
+build	Build with Gradle	2025-12-27T18:09:28.1147632Z   dependency-graph-continue-on-failure: true
+build	Build with Gradle	2025-12-27T18:09:28.1147886Z   build-scan-publish: false
+build	Build with Gradle	2025-12-27T18:09:28.1148087Z   validate-wrappers: false
+build	Build with Gradle	2025-12-27T18:09:28.1148316Z   generate-job-summary: true
+build	Build with Gradle	2025-12-27T18:09:28.1148532Z   arguments: :app:assembleRelease
+build	Build with Gradle	2025-12-27T18:09:28.1148766Z   gradle-home-cache-strict-match: false
+build	Build with Gradle	2025-12-27T18:09:28.1148996Z   workflow-job-context: null
+build	Build with Gradle	2025-12-27T18:09:28.1149536Z   github-token: ***
+build	Build with Gradle	2025-12-27T18:09:28.1149710Z env:
+build	Build with Gradle	2025-12-27T18:09:28.1149959Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.17-10/x64
+build	Build with Gradle	2025-12-27T18:09:28.1150383Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.17-10/x64
+build	Build with Gradle	2025-12-27T18:09:28.1150729Z   GRADLE_ACTION_ID: gradle/gradle-build-action
+build	Build with Gradle	2025-12-27T18:09:28.1150990Z ##[endgroup]
+build	Build with Gradle	2025-12-27T18:09:28.4910023Z Merged default JDK locations into /home/runner/.m2/toolchains.xml
+build	Build with Gradle	2025-12-27T18:09:28.4912481Z ##[group]Restore Gradle state from cache
+build	Build with Gradle	2025-12-27T18:09:28.5902151Z ##[warning]Failed to restore gradle-home-v1|Linux|build[2d49afe04bbf097bffd088b47df1dc9e]-dffea239c2a1010613d76eb7df921de1dd010ce7: Error: Cache service responded with 400
+build	Build with Gradle	2025-12-27T18:09:28.5966303Z Gradle User Home cache not found. Will initialize empty.
+build	Build with Gradle	2025-12-27T18:09:28.5967448Z ##[endgroup]
+build	Build with Gradle	2025-12-27T18:09:28.6848235Z ##[group]Provision Gradle 8.5
+build	Build with Gradle	2025-12-27T18:09:28.7162152Z ##[warning]Restore Gradle distribution 8.5 failed: Error: Cache service responded with 400
+build	Build with Gradle	2025-12-27T18:09:28.7163493Z Gradle distribution 8.5 not found in cache. Will download.
+build	Build with Gradle	2025-12-27T18:09:29.3727097Z Downloaded https://services.gradle.org/distributions/gradle-8.5-bin.zip to /home/runner/gradle-installations/downloads/gradle-8.5-bin.zip (size 132519731)
+build	Build with Gradle	2025-12-27T18:09:29.3834027Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/ftpbd/ftpbd --files-from manifest.txt --use-compress-program zstdmt
+build	Build with Gradle	2025-12-27T18:09:29.5324738Z ##[warning]Save Gradle distribution 8.5 failed: Error: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>02SBQaQAAAAD4laVY6+NoQ5Mg303f9nXLQ0hJMzBFREdFMDMxMgBFZGdl
+build	Build with Gradle	2025-12-27T18:09:29.5340156Z [command]/usr/bin/unzip -o -q /home/runner/gradle-installations/downloads/gradle-8.5-bin.zip
+build	Build with Gradle	2025-12-27T18:09:30.5009098Z Extracted Gradle 8.5 to /home/runner/gradle-installations/installs/gradle-8.5
+build	Build with Gradle	2025-12-27T18:09:30.5010341Z Provisioned Gradle executable /home/runner/gradle-installations/installs/gradle-8.5/bin/gradle
+build	Build with Gradle	2025-12-27T18:09:30.5011512Z ##[endgroup]
+build	Build with Gradle	2025-12-27T18:09:30.5016575Z [command]/home/runner/gradle-installations/installs/gradle-8.5/bin/gradle :app:assembleRelease
+build	Build with Gradle	2025-12-27T18:09:31.0340624Z 
+build	Build with Gradle	2025-12-27T18:09:31.0341483Z Welcome to Gradle 8.5!
+build	Build with Gradle	2025-12-27T18:09:31.0343004Z 
+build	Build with Gradle	2025-12-27T18:09:31.0343537Z Here are the highlights of this release:
+build	Build with Gradle	2025-12-27T18:09:31.0352864Z  - Support for running on Java 21
+build	Build with Gradle	2025-12-27T18:09:31.0353810Z  - Faster first use with Kotlin DSL
+build	Build with Gradle	2025-12-27T18:09:31.0354424Z  - Improved error and warning messages
+build	Build with Gradle	2025-12-27T18:09:31.0354777Z 
+build	Build with Gradle	2025-12-27T18:09:31.0355087Z For more details see https://docs.gradle.org/8.5/release-notes.html
+build	Build with Gradle	2025-12-27T18:09:31.0355358Z 
+build	Build with Gradle	2025-12-27T18:09:31.3323704Z Starting a Gradle Daemon (subsequent builds will be faster)
+build	Build with Gradle	2025-12-27T18:10:09.8340521Z > Task :buildSrc:checkKotlinGradlePluginConfigurationErrors
+build	Build with Gradle	2025-12-27T18:10:16.8335673Z > Task :buildSrc:generateExternalPluginSpecBuilders
+build	Build with Gradle	2025-12-27T18:10:16.8336365Z > Task :buildSrc:extractPrecompiledScriptPluginPlugins
+build	Build with Gradle	2025-12-27T18:10:18.7323489Z > Task :buildSrc:compilePluginsBlocks
+build	Build with Gradle	2025-12-27T18:10:48.7321965Z > Task :buildSrc:generatePrecompiledScriptPluginAccessors
+build	Build with Gradle	2025-12-27T18:10:48.9328764Z > Task :buildSrc:generateScriptPluginAdapters
+build	Build with Gradle	2025-12-27T18:10:55.3323873Z > Task :buildSrc:pluginDescriptors
+build	Build with Gradle	2025-12-27T18:10:55.3324439Z > Task :buildSrc:processResources
+build	Build with Gradle	2025-12-27T18:11:18.9329276Z > Task :buildSrc:compileKotlin
+build	Build with Gradle	2025-12-27T18:11:26.2337045Z > Task :buildSrc:compileJava NO-SOURCE
+build	Build with Gradle	2025-12-27T18:11:26.2343322Z > Task :buildSrc:compileGroovy NO-SOURCE
+build	Build with Gradle	2025-12-27T18:11:26.2344284Z > Task :buildSrc:classes
+build	Build with Gradle	2025-12-27T18:11:26.4345764Z > Task :buildSrc:jar
+build	Build with Gradle	2025-12-27T18:12:10.4337551Z 
+build	Build with Gradle	2025-12-27T18:12:10.4338385Z > Configure project :app
+build	Build with Gradle	2025-12-27T18:12:10.4339549Z WARNING: The option setting 'android.enableBuildConfigAsBytecode=true' is experimental.
+build	Build with Gradle	2025-12-27T18:12:10.4344155Z The current default is 'false'.
+build	Build with Gradle	2025-12-27T18:12:18.7321813Z 
+build	Build with Gradle	2025-12-27T18:12:18.7341785Z > Task :lib:playlist-utils:preBuild UP-TO-DATE
+build	Build with Gradle	2025-12-27T18:12:18.7342471Z > Task :core:preBuild UP-TO-DATE
+build	Build with Gradle	2025-12-27T18:12:18.7342953Z > Task :lib:playlist-utils:preReleaseBuild UP-TO-DATE
+build	Build with Gradle	2025-12-27T18:12:18.7343430Z > Task :core:preReleaseBuild UP-TO-DATE
+build	Build with Gradle	2025-12-27T18:12:18.7343909Z > Task :lib:playlist-utils:generateReleaseEmptyResourceFiles
+build	Build with Gradle	2025-12-27T18:12:18.7344516Z > Task :core:generateReleaseEmptyResourceFiles
+build	Build with Gradle	2025-12-27T18:12:18.8328755Z > Task :lib:playlist-utils:writeReleaseAarMetadata
+build	Build with Gradle	2025-12-27T18:12:18.8329370Z > Task :core:writeReleaseAarMetadata
+build	Build with Gradle	2025-12-27T18:12:18.8330037Z > Task :lib:playlist-utils:checkKotlinGradlePluginConfigurationErrors SKIPPED
+build	Build with Gradle	2025-12-27T18:12:18.8330870Z > Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+build	Build with Gradle	2025-12-27T18:12:18.8331480Z > Task :lib:playlist-utils:javaPreCompileRelease
+build	Build with Gradle	2025-12-27T18:12:18.9331414Z > Task :lib:playlist-utils:mergeReleaseJniLibFolders
+build	Build with Gradle	2025-12-27T18:12:18.9332190Z > Task :lib:playlist-utils:mergeReleaseNativeLibs NO-SOURCE
+build	Build with Gradle	2025-12-27T18:12:18.9333027Z > Task :lib:playlist-utils:stripReleaseDebugSymbols NO-SOURCE
+build	Build with Gradle	2025-12-27T18:12:18.9333710Z > Task :lib:playlist-utils:copyReleaseJniLibsProjectAndLocalJars
+build	Build with Gradle	2025-12-27T18:12:18.9336136Z > Task :lib:playlist-utils:generateReleaseAssets UP-TO-DATE
+build	Build with Gradle	2025-12-27T18:12:18.9337106Z > Task :lib:playlist-utils:packageReleaseAssets FROM-CACHE
+build	Build with Gradle	2025-12-27T18:12:18.9338221Z > Task :lib:playlist-utils:prepareLintJarForPublish
+build	Build with Gradle	2025-12-27T18:12:18.9338903Z > Task :lib:playlist-utils:prepareReleaseArtProfile
+build	Build with Gradle	2025-12-27T18:12:18.9339538Z > Task :core:processReleaseManifest
+build	Build with Gradle	2025-12-27T18:12:18.9340171Z > Task :lib:playlist-utils:processReleaseManifest
+build	Build with Gradle	2025-12-27T18:12:18.9340839Z > Task :lib:playlist-utils:extractProguardFiles
+build	Build with Gradle	2025-12-27T18:12:19.0320894Z > Task :lib:playlist-utils:writeReleaseLintModelMetadata
+build	Build with Gradle	2025-12-27T18:12:19.0321469Z > Task :lib:playlist-utils:copyReleaseJniLibsProjectOnly
+build	Build with Gradle	2025-12-27T18:12:20.1320903Z > Task :app:buildKotlinToolingMetadata
+build	Build with Gradle	2025-12-27T18:12:20.1321651Z > Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+build	Build with Gradle	2025-12-27T18:12:20.1322107Z > Task :app:preBuild UP-TO-DATE
+build	Build with Gradle	2025-12-27T18:12:20.1322524Z > Task :app:preReleaseBuild UP-TO-DATE
+build	Build with Gradle	2025-12-27T18:12:24.0321816Z > Task :app:mapReleaseSourceSetPaths
+build	Build with Gradle	2025-12-27T18:12:24.0322995Z > Task :app:generateReleaseResources UP-TO-DATE
+build	Build with Gradle	2025-12-27T18:12:24.0324960Z > Task :app:checkReleaseAarMetadata
+build	Build with Gradle	2025-12-27T18:12:24.1321005Z > Task :app:packageReleaseResources
+build	Build with Gradle	2025-12-27T18:12:24.5321570Z > Task :app:createReleaseCompatibleScreenManifests
+build	Build with Gradle	2025-12-27T18:12:24.5322370Z > Task :app:extractDeepLinksRelease
+build	Build with Gradle	2025-12-27T18:12:24.5322829Z > Task :app:javaPreCompileRelease FROM-CACHE
+build	Build with Gradle	2025-12-27T18:12:24.6321534Z > Task :app:extractProguardFiles
+build	Build with Gradle	2025-12-27T18:12:24.6322063Z > Task :app:mergeReleaseJniLibFolders FROM-CACHE
+build	Build with Gradle	2025-12-27T18:12:24.7320263Z > Task :app:parseReleaseLocalResources
+build	Build with Gradle	2025-12-27T18:12:24.9324081Z > Task :app:mergeReleaseResources
+build	Build with Gradle	2025-12-27T18:12:25.0320670Z > Task :app:checkReleaseDuplicateClasses
+build	Build with Gradle	2025-12-27T18:12:25.3333366Z > Task :app:desugarReleaseFileDependencies
+build	Build with Gradle	2025-12-27T18:12:36.6320799Z 
+build	Build with Gradle	2025-12-27T18:12:36.6322158Z > Task :app:processReleaseMainManifest
+build	Build with Gradle	2025-12-27T18:12:36.6323455Z package="eu.kanade.tachiyomi.animeextension.bn.ftpbd" found in source AndroidManifest.xml: /home/runner/work/ftpbd/ftpbd/app/src/main/AndroidManifest.xml.
+build	Build with Gradle	2025-12-27T18:12:36.6325011Z Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+build	Build with Gradle	2025-12-27T18:12:36.6326645Z Recommendation: remove package="eu.kanade.tachiyomi.animeextension.bn.ftpbd" from the source AndroidManifest.xml: /home/runner/work/ftpbd/ftpbd/app/src/main/AndroidManifest.xml.
+build	Build with Gradle	2025-12-27T18:12:36.7320559Z 
+build	Build with Gradle	2025-12-27T18:12:36.7321993Z > Task :app:processReleaseManifest
+build	Build with Gradle	2025-12-27T18:12:36.7344264Z > Task :app:generateReleaseAssets UP-TO-DATE
+build	Build with Gradle	2025-12-27T18:12:36.7345932Z > Task :app:collectReleaseDependencies
+build	Build with Gradle	2025-12-27T18:12:36.9321581Z > Task :app:sdkReleaseDependencyData
+build	Build with Gradle	2025-12-27T18:12:37.7326224Z > Task :app:validateSigningRelease
+build	Build with Gradle	2025-12-27T18:12:37.7329373Z > Task :app:writeReleaseAppMetadata
+build	Build with Gradle	2025-12-27T18:12:37.7331814Z > Task :app:writeReleaseSigningConfigVersions
+build	Build with Gradle	2025-12-27T18:12:37.7333826Z > Task :app:processReleaseManifestForPackage
+build	Build with Gradle	2025-12-27T18:12:37.8322891Z > Task :app:mergeExtDexRelease
+build	Build with Gradle	2025-12-27T18:12:46.8320499Z > Task :app:processReleaseResources
+build	Build with Gradle	2025-12-27T18:12:46.8321190Z > Task :app:optimizeReleaseResources
+build	Build with Gradle	2025-12-27T18:12:48.8319897Z > Task :core:compileReleaseKotlin
+build	Build with Gradle	2025-12-27T18:12:58.6329211Z > Task :core:javaPreCompileRelease FROM-CACHE
+build	Build with Gradle	2025-12-27T18:12:58.6332156Z > Task :core:mergeReleaseJniLibFolders FROM-CACHE
+build	Build with Gradle	2025-12-27T18:12:58.6332864Z > Task :core:mergeReleaseNativeLibs NO-SOURCE
+build	Build with Gradle	2025-12-27T18:12:58.6333355Z > Task :core:stripReleaseDebugSymbols NO-SOURCE
+build	Build with Gradle	2025-12-27T18:12:58.7324996Z > Task :core:generateReleaseAssets UP-TO-DATE
+build	Build with Gradle	2025-12-27T18:12:58.7334593Z > Task :core:copyReleaseJniLibsProjectAndLocalJars
+build	Build with Gradle	2025-12-27T18:12:58.7353117Z > Task :core:packageReleaseAssets FROM-CACHE
+build	Build with Gradle	2025-12-27T18:12:58.7382462Z > Task :core:prepareLintJarForPublish
+build	Build with Gradle	2025-12-27T18:12:58.7383254Z > Task :core:prepareReleaseArtProfile
+build	Build with Gradle	2025-12-27T18:12:58.7383943Z > Task :app:mergeReleaseAssets FROM-CACHE
+build	Build with Gradle	2025-12-27T18:12:58.7384584Z > Task :core:extractProguardFiles
+build	Build with Gradle	2025-12-27T18:12:58.7385174Z > Task :core:writeReleaseLintModelMetadata
+build	Build with Gradle	2025-12-27T18:12:58.7425124Z > Task :core:copyReleaseJniLibsProjectOnly
+build	Build with Gradle	2025-12-27T18:12:58.7426146Z > Task :app:compressReleaseAssets
+build	Build with Gradle	2025-12-27T18:12:58.7426659Z > Task :app:mergeReleaseArtProfile
+build	Build with Gradle	2025-12-27T18:12:58.8337714Z > Task :app:mergeReleaseNativeLibs
+build	Build with Gradle	2025-12-27T18:12:58.9323348Z 
+build	Build with Gradle	2025-12-27T18:12:58.9343305Z > Task :app:stripReleaseDebugSymbols
+build	Build with Gradle	2025-12-27T18:12:58.9344412Z Unable to strip the following libraries, packaging them as they are: libquickjs.so.
+build	Build with Gradle	2025-12-27T18:12:58.9345149Z 
+build	Build with Gradle	2025-12-27T18:12:58.9345615Z > Task :app:extractReleaseNativeSymbolTables
+build	Build with Gradle	2025-12-27T18:12:58.9346290Z > Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+build	Build with Gradle	2025-12-27T18:13:05.0319671Z 
+build	Build with Gradle	2025-12-27T18:13:05.0323925Z > Task :core:compileReleaseKotlin
+build	Build with Gradle	2025-12-27T18:13:05.0326292Z w: file:///home/runner/work/ftpbd/ftpbd/core/src/main/kotlin/extensions/utils/Json.kt:26:16 This declaration needs opt-in. Its usage should be marked with '@kotlinx.serialization.ExperimentalSerializationApi' or '@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)'
+build	Build with Gradle	2025-12-27T18:13:05.0328039Z 
+build	Build with Gradle	2025-12-27T18:13:05.0328302Z > Task :core:compileReleaseJavaWithJavac NO-SOURCE
+build	Build with Gradle	2025-12-27T18:13:05.1320119Z > Task :core:processReleaseJavaRes
+build	Build with Gradle	2025-12-27T18:13:05.1320486Z > Task :core:bundleLibCompileToJarRelease
+build	Build with Gradle	2025-12-27T18:13:05.1320959Z > Task :core:bundleLibRuntimeToJarRelease
+build	Build with Gradle	2025-12-27T18:13:09.0443639Z 
+build	Build with Gradle	2025-12-27T18:13:09.0444300Z > Task :lib:playlist-utils:compileReleaseKotlin
+build	Build with Gradle	2025-12-27T18:13:09.0446161Z w: file:///home/runner/work/ftpbd/ftpbd/lib/playlist-utils/src/main/java/eu/kanade/tachiyomi/lib/playlistutils/PlaylistUtils.kt:15:86 '@property:Deprecated(...) val commonEmptyHeaders: Headers' is deprecated. Use newer API `Headers.EMPTY` instead.
+build	Build with Gradle	2025-12-27T18:13:09.1154401Z 
+build	Build with Gradle	2025-12-27T18:13:09.1155322Z > Task :lib:playlist-utils:compileReleaseJavaWithJavac NO-SOURCE
+build	Build with Gradle	2025-12-27T18:13:09.1156187Z > Task :lib:playlist-utils:bundleLibCompileToJarRelease
+build	Build with Gradle	2025-12-27T18:13:09.1174900Z > Task :lib:playlist-utils:bundleLibRuntimeToJarRelease
+build	Build with Gradle	2025-12-27T18:13:09.1176800Z > Task :lib:playlist-utils:processReleaseJavaRes
+build	Build with Gradle	2025-12-27T18:13:09.1178069Z > Task :lib:playlist-utils:createFullJarRelease
+build	Build with Gradle	2025-12-27T18:13:11.2321205Z 
+build	Build with Gradle	2025-12-27T18:13:11.2324086Z > Task :app:compileReleaseKotlin
+build	Build with Gradle	2025-12-27T18:13:11.2327427Z e: file:///home/runner/work/ftpbd/ftpbd/app/src/main/kotlin/eu/kanade/tachiyomi/animeextension/bn/ftpbd/FtpBd.kt:161:70 Unsupported escape sequence.
+build	Build with Gradle	2025-12-27T18:13:11.3321404Z 
+build	Build with Gradle	2025-12-27T18:13:11.3324569Z > Task :app:compileReleaseKotlin FAILED
+build	Build with Gradle	2025-12-27T18:13:13.7320903Z > Task :core:extractReleaseAnnotations
+build	Build with Gradle	2025-12-27T18:13:13.7322063Z > Task :lib:playlist-utils:extractReleaseAnnotations
+build	Build with Gradle	2025-12-27T18:13:13.8343590Z 
+build	Build with Gradle	2025-12-27T18:13:13.8345441Z FAILURE: Build failed with an exception.
+build	Build with Gradle	2025-12-27T18:13:13.8346108Z 
+build	Build with Gradle	2025-12-27T18:13:13.8346386Z * What went wrong:
+build	Build with Gradle	2025-12-27T18:13:13.8347727Z Execution failed for task ':app:compileReleaseKotlin'.
+build	Build with Gradle	2025-12-27T18:13:13.8349890Z > A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+build	Build with Gradle	2025-12-27T18:13:13.8351259Z    > Compilation error. See log for more details
+build	Build with Gradle	2025-12-27T18:13:13.8352592Z 
+build	Build with Gradle	2025-12-27T18:13:13.8352852Z * Try:
+build	Build with Gradle	2025-12-27T18:13:13.8353967Z > Run with --stacktrace option to get the stack trace.
+build	Build with Gradle	2025-12-27T18:13:13.8354714Z > Run with --info or --debug option to get more log output.
+build	Build with Gradle	2025-12-27T18:13:13.8373060Z > Run with --scan to get full insights.
+build	Build with Gradle	2025-12-27T18:13:13.8373948Z > Get more help at https://help.gradle.org.
+build	Build with Gradle	2025-12-27T18:13:13.8378089Z 
+build	Build with Gradle	2025-12-27T18:13:13.8378580Z BUILD FAILED in 3m 43s
+build	Build with Gradle	2025-12-27T18:13:13.8379318Z 76 actionable tasks: 69 executed, 7 from cache
+build	Build with Gradle	2025-12-27T18:13:14.2048359Z ##[error]Gradle build failed: see console output for details
+build	Post Build with Gradle	﻿2025-12-27T18:13:14.2286079Z Post job cleanup.
+build	Post Build with Gradle	2025-12-27T18:13:14.2334238Z Post job cleanup.
+build	Post Build with Gradle	2025-12-27T18:13:14.4565006Z ##[warning]This job uses deprecated functionality from the 'gradle/gradle-build-action' action. Consult the Job Summary for more details.
+build	Post Build with Gradle	2025-12-27T18:13:14.4567442Z DEPRECATION: The action `gradle/gradle-build-action` has been replaced by `gradle/actions/setup-gradle`. See https://github.com/gradle/actions/blob/main/docs/deprecation-upgrade-guide.md#the-action-gradlegradle-build-action-has-been-replaced-by-gradleactionssetup-gradle
+build	Post Build with Gradle	2025-12-27T18:13:14.4570473Z DEPRECATION: Using the action to execute Gradle via the `arguments` parameter is deprecated. See https://github.com/gradle/actions/blob/main/docs/deprecation-upgrade-guide.md#using-the-action-to-execute-gradle-via-the-arguments-parameter-is-deprecated
+build	Post Build with Gradle	2025-12-27T18:13:14.4572160Z In post-action step
+build	Post Build with Gradle	2025-12-27T18:13:14.4576074Z Stopping all Gradle daemons before saving Gradle User Home state
+build	Post Build with Gradle	2025-12-27T18:13:14.4576886Z Stopping Gradle daemons for /home/runner/gradle-installations/installs/gradle-8.5
+build	Post Build with Gradle	2025-12-27T18:13:14.4593354Z [command]/home/runner/gradle-installations/installs/gradle-8.5/bin/gradle --stop
+build	Post Build with Gradle	2025-12-27T18:13:15.2633860Z Stopping Daemon(s)
+build	Post Build with Gradle	2025-12-27T18:13:15.2643761Z 1 Daemon stopped
+build	Post Build with Gradle	2025-12-27T18:13:15.2976782Z ##[group]Caching Gradle state
+build	Post Build with Gradle	2025-12-27T18:13:15.3267596Z Caching generated-gradle-jars with path '/home/runner/.gradle/caches/8.5/generated-gradle-jars/gradle-api-8.5.jar' and cache key: gradle-generated-gradle-jars-v1-fa001ab82c3596b4e27ec78f191b889f
+build	Post Build with Gradle	2025-12-27T18:13:15.3386669Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/ftpbd/ftpbd --files-from manifest.txt --use-compress-program zstdmt
+build	Post Build with Gradle	2025-12-27T18:13:15.5965493Z Caching dependencies with path '/home/runner/.gradle/caches/modules-*/files-*/*/*/*/*' and cache key: gradle-dependencies-v1-97ba55db4377a2b6cd4f370a125a69a5
+build	Post Build with Gradle	2025-12-27T18:13:15.6985645Z Caching instrumented-jars with path '/home/runner/.gradle/caches/jars-*/*/' and cache key: gradle-instrumented-jars-v1-7188f9ac8b32e1c0123596e8d015e679
+build	Post Build with Gradle	2025-12-27T18:13:15.7264075Z Caching kotlin-dsl with path '/home/runner/.gradle/caches/*/kotlin-dsl/accessors/*/
+build	Post Build with Gradle	2025-12-27T18:13:15.7266305Z /home/runner/.gradle/caches/*/kotlin-dsl/scripts/*/' and cache key: gradle-kotlin-dsl-v1-78059b22f1b9eddb5f17a33fea211603
+build	Post Build with Gradle	2025-12-27T18:13:15.7771986Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/ftpbd/ftpbd --files-from manifest.txt --use-compress-program zstdmt
+build	Post Build with Gradle	2025-12-27T18:13:15.8563393Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/ftpbd/ftpbd --files-from manifest.txt --use-compress-program zstdmt
+build	Post Build with Gradle	2025-12-27T18:13:15.9883013Z ##[warning]Failed to save cache entry with path '/home/runner/.gradle/caches/*/kotlin-dsl/accessors/*/
+build	Post Build with Gradle	/home/runner/.gradle/caches/*/kotlin-dsl/scripts/*/' and key: gradle-kotlin-dsl-v1-78059b22f1b9eddb5f17a33fea211603: Error: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0uyFQaQAAAADKqC3LrxM6T5ecfXuo/nOwQ0hHRURHRTE3MDUARWRnZQ==
+build	Post Build with Gradle	2025-12-27T18:13:16.0513856Z ##[warning]Failed to save cache entry with path '/home/runner/.gradle/caches/8.5/generated-gradle-jars/gradle-api-8.5.jar' and key: gradle-generated-gradle-jars-v1-fa001ab82c3596b4e27ec78f191b889f: Error: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0uyFQaQAAAAB1N9BseNTVRZ8nuf2aEd0yQ0hHRURHRTE4MDgARWRnZQ==
+build	Post Build with Gradle	2025-12-27T18:13:16.2011179Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/ftpbd/ftpbd --files-from manifest.txt --use-compress-program zstdmt
+build	Post Build with Gradle	2025-12-27T18:13:17.8516720Z ##[warning]Failed to save cache entry with path '/home/runner/.gradle/caches/modules-*/files-*/*/*/*/*' and key: gradle-dependencies-v1-97ba55db4377a2b6cd4f370a125a69a5: Error: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0vSFQaQAAAACE/dpnsNMGTqpNzdm7yDW4Q0hJMzBFREdFMDQwOABFZGdl
+build	Post Build with Gradle	2025-12-27T18:13:18.3894609Z ##[warning]Failed to save cache entry with path '/home/runner/.gradle/caches/jars-*/*/' and key: gradle-instrumented-jars-v1-7188f9ac8b32e1c0123596e8d015e679: Error: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0viFQaQAAAABu9SmC/nphT7pwdaCRfgolQ0hHRURHRTE5MTIARWRnZQ==
+build	Post Build with Gradle	2025-12-27T18:13:18.4916084Z Caching Gradle User Home with cache key: gradle-home-v1|Linux|build[2d49afe04bbf097bffd088b47df1dc9e]-dffea239c2a1010613d76eb7df921de1dd010ce7
+build	Post Build with Gradle	2025-12-27T18:13:18.5016432Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/ftpbd/ftpbd --files-from manifest.txt --use-compress-program zstdmt
+build	Post Build with Gradle	2025-12-27T18:13:18.7398262Z ##[warning]Failed to save cache entry with path '/home/runner/.gradle/caches,/home/runner/.gradle/notifications,/home/runner/.gradle/.setup-gradle' and key: gradle-home-v1|Linux|build[2d49afe04bbf097bffd088b47df1dc9e]-dffea239c2a1010613d76eb7df921de1dd010ce7: Error: <h2>Our services aren't available right now</h2><p>We're working to restore all services as soon as possible. Please check back soon.</p>0viFQaQAAAACVcCpSwXHeQKQmLb8jsvNaQ0hJMzBFREdFMDIwOABFZGdl
+build	Post Build with Gradle	2025-12-27T18:13:18.7400083Z ##[endgroup]
+build	Post Build with Gradle	2025-12-27T18:13:18.7403193Z Generating Job Summary
+build	Post Build with Gradle	2025-12-27T18:13:18.7414768Z Completed post-action step
+build	Post Set up JDK 17	﻿2025-12-27T18:13:18.7540012Z Post job cleanup.
+build	Post Checkout code	﻿2025-12-27T18:13:18.9149651Z Post job cleanup.
+build	Post Checkout code	2025-12-27T18:13:19.0025780Z [command]/usr/bin/git version
+build	Post Checkout code	2025-12-27T18:13:19.0058158Z git version 2.52.0
+build	Post Checkout code	2025-12-27T18:13:19.0096399Z Temporarily overriding HOME='/home/runner/work/_temp/4e7a0f66-2f8c-429d-ae2a-917d72a8eacc' before making global git config changes
+build	Post Checkout code	2025-12-27T18:13:19.0097253Z Adding repository directory to the temporary git global config as a safe directory
+build	Post Checkout code	2025-12-27T18:13:19.0109193Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ftpbd/ftpbd
+build	Post Checkout code	2025-12-27T18:13:19.0139467Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build	Post Checkout code	2025-12-27T18:13:19.0166599Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build	Post Checkout code	2025-12-27T18:13:19.0341812Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build	Post Checkout code	2025-12-27T18:13:19.0358656Z http.https://github.com/.extraheader
+build	Post Checkout code	2025-12-27T18:13:19.0369625Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+build	Post Checkout code	2025-12-27T18:13:19.0394200Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build	Post Checkout code	2025-12-27T18:13:19.0565829Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build	Post Checkout code	2025-12-27T18:13:19.0594326Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build	Complete job	﻿2025-12-27T18:13:19.0855897Z Cleaning up orphan processes
