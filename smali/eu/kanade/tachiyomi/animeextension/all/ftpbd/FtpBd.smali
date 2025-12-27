@@ -1307,9 +1307,7 @@
     move-result-object v3
     invoke-virtual {v3}, Lorg/jsoup/select/Elements;->first()Lorg/jsoup/nodes/Element;
     move-result-object v3
-    if-nez v3, :cond_goto_search
-    goto :goto_search
-:cond_goto_search
+    if-nez v3, :cond_skip_item
     invoke-virtual {v3}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
     move-result-object v4
     const-string v5, "abs:href"
@@ -1317,13 +1315,11 @@
     move-result-object v3
     invoke-static {v4}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
     move-result v5
-    if-nez v5, :cond_goto_search
+    if-eqz v5, :cond_skip_item
     invoke-static {v3}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
-
     move-result v5
-
     if-eqz v5, :cond_add_search
-:cond_goto_search
+:cond_skip_item
     goto :goto_search
 :cond_add_search
     new-instance v5, Leu/kanade/tachiyomi/animesource/model/SAnimeImpl;
