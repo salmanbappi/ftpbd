@@ -52,8 +52,8 @@ def generate():
     # Save repo.json
     repo_info = {
         "meta": {
-            "name": "SalmanBappi Extensions",
-            "shortName": "salmanbappi",
+            "name": "FtpBd Official Repository",
+            "shortName": "ftpbd_official",
             "website": "https://github.com/salmanbappi/ftpbd",
             "signingKeyFingerprint": "17a9a43374e4951aadb5f33e6d8b10a21e231cdfda050a0473a50254494dc040"
         }

@@ -2377,24 +2377,54 @@
 .method protected latestUpdatesRequest(I)Lokhttp3/Request;
     .locals 4
 
-    new-instance v0, Ljava/lang/StringBuilder;
-    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
+    const/4 v0, 0x1
+
+    if-ne p1, v0, :cond_page_one
+
     invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getBaseUrl()Ljava/lang/String;
+
+    move-result-object p1
+
+    goto :goto_build
+
+    :cond_page_one
+    new-instance v0, Ljava/lang/StringBuilder;
+
+    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getBaseUrl()Ljava/lang/String;
+
     move-result-object v1
+
     invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
     const-string v1, "/page/"
+
     invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
     invoke-virtual {v0, p1}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
-    const-string v1, "/"
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    const-string p1, "/"
+
+    invoke-virtual {v0, p1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
     invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
     move-result-object p1
+
+    :goto_build
     invoke-direct {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getGlobalHeaders()Lokhttp3/Headers;
+
     move-result-object v0
+
     const/4 v1, 0x0
+
     const/4 v2, 0x4
+
     invoke-static {p1, v0, v1, v2, v1}, Leu/kanade/tachiyomi/network/RequestsKt;->GET$default(Ljava/lang/String;Lokhttp3/Headers;Lokhttp3/CacheControl;ILjava/lang/Object;)Lokhttp3/Request;
+
     move-result-object p1
+
     return-object p1
 .end method
 
