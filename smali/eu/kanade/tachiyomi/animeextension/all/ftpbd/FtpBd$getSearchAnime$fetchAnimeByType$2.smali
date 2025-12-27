@@ -340,7 +340,7 @@
     :cond_label_error
     new-instance p1, Ljava/lang/IllegalStateException;
 
-    const-string v0, "call to "resume" before "invoke" with coroutine"
+    const-string v0, "call to \"resume\" before \"invoke\" with coroutine"
 
     invoke-direct {p1, v0}, Ljava/lang/IllegalStateException;-><init>(Ljava/lang/String;)V
 
