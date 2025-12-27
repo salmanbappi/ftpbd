@@ -32,8 +32,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     override val name = "FtpBd"
 
-    override val baseUrl: String
-        get() = if (System.currentTimeMillis() >= 1751673600000L) "https://server3.ftpbd.net" else "https://server3.ftpbd.net"
+    override val baseUrl = "https://ftpbd.net"
 
     override val lang = "all"
 
@@ -75,11 +74,13 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val animeList = mutableListOf<SAnime>()
 
         // Check for directory listing or WordPress grid
-        val items = document.select("div.card, article, .jws-post-item")
+        val items = document.select("div.card, article, .jws-post-item, .post-item, .movie-item")
         if (items.isNotEmpty()) {
             items.forEach { element ->
-                val link = element.selectFirst("h5 a, h2 a, h3 a, h4 a, .post-image a, .post-media a") ?: return@forEach
-                val title = link.text().trim()
+                val link = element.selectFirst("h5 a, h2 a, h3 a, h4 a, .post-image a, .post-media a, a:has(img)") ?: return@forEach
+                val title = link.text().trim().ifBlank { 
+                    element.selectFirst("img")?.attr("alt")?.trim() ?: "" 
+                }
                 if (title.isBlank()) return@forEach
                 
                 val url = link.attr("abs:href")
@@ -134,9 +135,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request {
         val url = if (query.isNotBlank()) {
             baseUrl.toHttpUrl().newBuilder().apply {
-                addPathSegment("search")
-                addQueryParameter("term", query)
-                addQueryParameter("types", "movies")
+                addQueryParameter("s", query)
             }.build().toString()
         } else {
             Filters.getUrl(query, filters)
