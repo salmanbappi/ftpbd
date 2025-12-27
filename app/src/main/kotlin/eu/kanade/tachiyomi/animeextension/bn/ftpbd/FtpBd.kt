@@ -112,7 +112,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         
         return try {
             val response = client.newCall(POST(url, headers, body)).awaitSuccess()
-            val text = response.body.string()
+            val text = response.body?.string() ?: ""
             val regex = """"href":"([^"]+)"""".toRegex()
             regex.findAll(text).map {
                 val rawPath = it.groupValues[1]
@@ -161,7 +161,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val url = "https://api.themoviedb.org/3/search/multi?api_key=$key&query=${java.net.URLEncoder.encode(title, "UTF-8")}"
         return try {
             val response = client.newCall(GET(url)).execute()
-            val json = response.body.string()
+            val json = response.body?.string() ?: ""
             val regex = """"poster_path":"([^"]+)"""".toRegex()
             regex.find(json)?.groupValues?.get(1)?.let { "https://image.tmdb.org/t/p/w500$it" }
         } catch (e: Exception) {
