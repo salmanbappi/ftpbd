@@ -164,6 +164,7 @@
     move-result-object v4
 
     :cond_loop
+    :goto_loop
     invoke-interface {v4}, Ljava/util/Iterator;->hasNext()Z
 
     move-result v5
@@ -182,11 +183,11 @@
 
     move-result-object v6
 
-    if-nez v6, :cond_skip
+    if-nez v6, :cond_skip_item
 
-    goto :cond_loop
+    goto :goto_loop
 
-:cond_skip
+:cond_skip_item
     const-string v7, "abs:href"
 
     invoke-virtual {v6, v7}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
@@ -223,6 +224,8 @@
     move-result-object v8
 
     :goto_title
+    check-cast v8, Ljava/lang/CharSequence;
+
     invoke-static {v8}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
 
     move-result v10
@@ -234,23 +237,36 @@
     move-result-object v8
 
     :cond_use_link_text
+    check-cast v8, Ljava/lang/CharSequence;
+
     invoke-static {v8}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
 
     move-result v10
 
-    if-nez v10, :cond_loop
+    if-eqz v10, :cond_add_item
 
+    goto :goto_loop
+
+:cond_add_item
     const-string v10, "ftpbd.net"
 
-    invoke-virtual {v7, v10}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+    check-cast v10, Ljava/lang/CharSequence;
+
+    check-cast v7, Ljava/lang/CharSequence;
+
+    const/4 v11, 0x0
+
+    const/4 v12, 0x2
+
+    invoke-static {v7, v10, v11, v12, v3}, Lkotlin/text/StringsKt;->contains$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
 
     move-result v10
 
-    if-nez v10, :cond_add
+    if-nez v10, :cond_actual_add
 
-    goto :cond_loop
+    goto :goto_loop
 
-:cond_add
+:cond_actual_add
     new-instance v10, Leu/kanade/tachiyomi/animesource/model/SAnimeImpl;
 
     invoke-direct {v10}, Leu/kanade/tachiyomi/animesource/model/SAnimeImpl;-><init>()V
@@ -259,7 +275,15 @@
 
     check-cast v11, Leu/kanade/tachiyomi/animesource/model/SAnime;
 
+    invoke-virtual {v8}, Ljava/lang/Object;->toString()Ljava/lang/String;
+
+    move-result-object v8
+
     invoke-interface {v11, v8}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
+
+    invoke-virtual {v7}, Ljava/lang/Object;->toString()Ljava/lang/String;
+
+    move-result-object v7
 
     invoke-interface {v11, v7}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setUrl(Ljava/lang/String;)V
 
