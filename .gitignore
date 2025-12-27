@@ -1,0 +1,14 @@
+.gradle
+build/
+app/build/
+core/build/
+lib/*/build/
+*.iml
+.idea/
+local.properties
+.DS_Store
+captures/
+.externalNativeBuild
+.cxx
+*unsigned.apk
+*signed.apk

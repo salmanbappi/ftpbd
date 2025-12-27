@@ -1,4 +1,4 @@
-name: Build FtpBd
+name: Build FtpBd (Source)
 
 on:
   push:
@@ -25,101 +25,25 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Run Automated Tests
+      - name: Build with Gradle
         run: |
-          pip install requests beautifulsoup4
-          python .github/scripts/test_extension.py
+          chmod +x gradlew
+          ./gradlew :app:assembleRelease
 
-      - name: Install Apktool
+      - name: Get Version
         run: |
-          mkdir -p $HOME/.local/bin
-          wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool -O $HOME/.local/bin/apktool
-          wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.12.0.jar -O $HOME/.local/bin/apktool.jar
-          chmod +x $HOME/.local/bin/apktool $HOME/.local/bin/apktool.jar
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Bump Version
-        run: |
-          chmod +x .github/scripts/update_version.sh
-          ./.github/scripts/update_version.sh
-          VERSION_NAME=$(grep "versionName:" apktool.yml | awk '{print $2}' | tr -d "'\"")
+          VERSION_NAME=$(grep "versionName =" app/build.gradle | head -n 1 | awk -F'"' '{print $2}')
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-
-      - name: Build APK
-        run: |
-          BUILD_TOOLS_DIR=$(find $ANDROID_SDK_ROOT/build-tools -maxdepth 2 -type d -name "3*" | sort -r | head -n 1)
-          if [ -z "$BUILD_TOOLS_DIR" ]; then
-            BUILD_TOOLS_DIR=$(find $ANDROID_SDK_ROOT/build-tools -maxdepth 1 -type d | sort -r | head -n 1)
-          fi
-          export PATH=$PATH:$BUILD_TOOLS_DIR
-          apktool b . -o ftpbd-unsigned.apk
-
-      - name: Sign APK
-        run: |
-          APKSIGNER=$(find $ANDROID_SDK_ROOT/build-tools -name apksigner | sort -r | head -n 1)
-          "$APKSIGNER" sign --ks keystore.jks --ks-pass "pass:ftpbd123" --key-pass "pass:ftpbd123" --out ftpbd-${{ env.VERSION_NAME }}.apk ftpbd-unsigned.apk
-          ls -lh ftpbd-${{ env.VERSION_NAME }}.apk
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION_NAME }}
           name: Release v${{ env.VERSION_NAME }}
-          files: |
-            ftpbd-${{ env.VERSION_NAME }}.apk
+          files: app/build/outputs/apk/release/app-release-unsigned.apk
           draft: false
           prerelease: false
           generate_release_notes: true
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate Repo Index
-        run: |
-          pip install PyYAML
-          python .github/scripts/generate_repo.py
-          mkdir repo_dist
-          mv index.min.json repo_dist/
-          mv repo.json repo_dist/
-          cp ftpbd-${{ env.VERSION_NAME }}.apk repo_dist/
-
-      - name: Deploy to Repo Branch
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: repo
-          publish_dir: repo_dist
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          keep_files: true
-
-      - name: Commit Version Bump
-        run: |
-          git config --global user.name "Gemini Automation"
-          git config --global user.email "gemini@automation.bot"
-          git add apktool.yml AndroidManifest.xml
-          git commit -m "chore: bump version code [skip ci]" || exit 0
-          git push origin main
-
-      - name: Push to Extensions Repo
-        run: |
-          REPO_DIR="extensions-repo-tmp"
-          git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/salmanbappi/extensions-repo.git $REPO_DIR
-          
-          PKG_NAME="eu.kanade.tachiyomi.animeextension.all.ftpbd"
-          VERSION_CODE=$(grep "versionCode:" apktool.yml | awk '{print $2}' | tr -d "'\"")
-          VERSION_NAME="${{ env.VERSION_NAME }}"
-          TARGET_NAME="$PKG_NAME-v$VERSION_NAME-c$VERSION_CODE.apk"
-          
-          mkdir -p $REPO_DIR/apk
-          cp ftpbd-$VERSION_NAME.apk $REPO_DIR/apk/$TARGET_NAME
-          
-          cd $REPO_DIR
-          git config user.name "Gemini Automation"
-          git config user.email "gemini@automation.bot"
-          git add apk/$TARGET_NAME
-          git commit -m "Update FtpBd to v$VERSION_NAME"
-          git push
