@@ -2,7 +2,6 @@
 .super Leu/kanade/tachiyomi/animesource/online/AnimeHttpSource;
 
 .implements Leu/kanade/tachiyomi/animesource/AnimeCatalogueSource;
-.implements Leu/kanade/tachiyomi/animesource/ConfigurableAnimeSource;
 
 .field private final cm$delegate:Lkotlin/Lazy;
 .field private final cookieHeader$delegate:Lkotlin/Lazy;
@@ -374,40 +373,10 @@
     const/4 v6, 0x0
     const/4 v7, 0x4
     const/4 v8, 0x0
-        invoke-static/range {v3 .. v8}, Lkotlin/text/StringsKt;->replace$default(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
-    
-        move-result-object v1
-    
-        invoke-interface {v0, v1}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
-    
-        const-string v1, "h1, h2, .movie-details h1, .movie-title, .title"
-    
-        invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
-    
-        move-result-object v1
-    
-        invoke-virtual {v1}, Lorg/jsoup/select/Elements;->first()Lorg/jsoup/nodes/Element;
-    
-        move-result-object v1
-    
-        if-eqz v1, :cond_no_tmdb
-    
-        invoke-virtual {v1}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
-    
-        move-result-object v1
-    
-        invoke-interface {v0, v1}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
-    
-        invoke-direct {p0, v1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getTmdbImageUrl(Ljava/lang/String;)Ljava/lang/String;
-    
-        move-result-object v1
-    
-        if-eqz v1, :cond_no_tmdb
-    
-        invoke-interface {v0, v1}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
-    
-    :cond_no_tmdb
-        const-string v1, "div.ganre-wrapper a"
+    invoke-static/range {v3 .. v8}, Lkotlin/text/StringsKt;->replace$default(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
+    move-result-object v1
+    invoke-interface {v0, v1}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
+    const-string v1, "div.ganre-wrapper a"
     invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     move-result-object v1
     const-string v2, "genreElements"
@@ -580,40 +549,10 @@
     const/4 v6, 0x0
     const/4 v7, 0x4
     const/4 v8, 0x0
-        invoke-static/range {v3 .. v8}, Lkotlin/text/StringsKt;->replace$default(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
-    
-        move-result-object v1
-    
-        invoke-interface {v0, v1}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
-    
-        const-string v1, "h1, h2, .series-details h1, .movie-title, .title"
-    
-        invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
-    
-        move-result-object v1
-    
-        invoke-virtual {v1}, Lorg/jsoup/select/Elements;->first()Lorg/jsoup/nodes/Element;
-    
-        move-result-object v1
-    
-        if-eqz v1, :cond_no_tmdb_s
-    
-        invoke-virtual {v1}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
-    
-        move-result-object v1
-    
-        invoke-interface {v0, v1}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
-    
-        invoke-direct {p0, v1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getTmdbImageUrl(Ljava/lang/String;)Ljava/lang/String;
-    
-        move-result-object v1
-    
-        if-eqz v1, :cond_no_tmdb_s
-    
-        invoke-interface {v0, v1}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
-    
-    :cond_no_tmdb_s
-        const-string v1, "div.ganre-wrapper a"
+    invoke-static/range {v3 .. v8}, Lkotlin/text/StringsKt;->replace$default(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
+    move-result-object v1
+    invoke-interface {v0, v1}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
+    const-string v1, "div.ganre-wrapper a"
     invoke-virtual {p1, v1}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     move-result-object v1
     const-string v2, "genreElements"
@@ -1622,297 +1561,11 @@
     move-result-object v0
     const/4 v1, 0x4
     const/4 v2, 0x0
-        invoke-static {p1, v0, v2, v1, v2}, Leu/kanade/tachiyomi/network/RequestsKt;->GET$default(Ljava/lang/String;Lokhttp3/Headers;Lokhttp3/CacheControl;ILjava/lang/Object;)Lokhttp3/Request;
-    
-        move-result-object p1
-    
-        return-object p1
-    .end method
-    
-    .method public setupPreferenceScreen(Landroidx/preference/PreferenceScreen;)V
-        .locals 4
-    
-        invoke-virtual {p1}, Landroidx/preference/PreferenceScreen;->getContext()Landroid/content/Context;
-    
-        move-result-object v0
-    
-        new-instance v1, Landroidx/preference/EditTextPreference;
-    
-        invoke-direct {v1, v0}, Landroidx/preference/EditTextPreference;-><init>(Landroid/content/Context;)V
-    
-        const-string v2, "tmdb_api_key"
-    
-        invoke-virtual {v1, v2}, Landroidx/preference/EditTextPreference;->setKey(Ljava/lang/String;)V
-    
-        const-string v2, "TMDb API Key"
-    
-        invoke-virtual {v1, v2}, Landroidx/preference/EditTextPreference;->setTitle(Ljava/lang/CharSequence;)V
-    
-        const-string v2, "Enter TMDb API key for images"
-    
-        invoke-virtual {v1, v2}, Landroidx/preference/EditTextPreference;->setSummary(Ljava/lang/CharSequence;)V
-    
-        const-string v2, ""
-    
-        invoke-virtual {v1, v2}, Landroidx/preference/EditTextPreference;->setDefaultValue(Ljava/lang/Object;)V
-    
-            invoke-virtual {p1, v1}, Landroidx/preference/PreferenceScreen;->addPreference(Landroidx/preference/Preference;)Z
-        
-            return-void
-        .end method
-        
-        .method private final getPreferences()Landroid/content/SharedPreferences;
-            .locals 5
-        
-            const-string v0, "uy.kohesive.injekt.Injekt"
-        
-            :try_start_0
-            invoke-static {v0}, Ljava/lang/Class;->forName(Ljava/lang/String;)Ljava/lang/Class;
-        
-            move-result-object v0
-        
-            const-string v1, "INSTANCE"
-        
-            invoke-virtual {v0, v1}, Ljava/lang/Class;->getField(Ljava/lang/String;)Ljava/lang/reflect/Field;
-        
-            move-result-object v1
-        
-            const/4 v2, 0x0
-        
-            invoke-virtual {v1, v2}, Ljava/lang/reflect/Field;->get(Ljava/lang/Object;)Ljava/lang/Object;
-        
-            move-result-object v1
-        
-            const-string v2, "get"
-        
-            const/4 v3, 0x2
-        
-            new-array v3, v3, [Ljava/lang/Class;
-        
-            const-class v4, Lkotlin/reflect/KClass;
-        
-            const/4 v5, 0x0
-        
-            aput-object v4, v3, v5
-        
-            const-class v4, Ljava/lang/Object;
-        
-            const/4 v5, 0x1
-        
-            aput-object v4, v3, v5
-        
-            invoke-virtual {v0, v2, v3}, Ljava/lang/Class;->getMethod(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;
-        
-            move-result-object v0
-        
-            const-class v2, Landroid/app/Application;
-        
-            invoke-static {v2}, Lkotlin/jvm/internal/Reflection;->getOrCreateKotlinClass(Ljava/lang/Class;)Lkotlin/reflect/KClass;
-        
-            move-result-object v2
-        
-            const/4 v3, 0x2
-        
-            new-array v3, v3, [Ljava/lang/Object;
-        
-            const/4 v4, 0x0
-        
-            aput-object v2, v3, v4
-        
-            const/4 v2, 0x0
-        
-            const/4 v4, 0x1
-        
-            aput-object v2, v3, v4
-        
-            invoke-virtual {v0, v1, v3}, Ljava/lang/reflect/Method;->invoke(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;
-        
-            move-result-object v0
-        
-            check-cast v0, Landroid/app/Application;
-        
-            new-instance v1, Ljava/lang/StringBuilder;
-        
-            invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
-        
-            const-string v2, "source_"
-        
-            invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        
-            iget-wide v2, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->id:J
-        
-            invoke-virtual {v1, v2, v3}, Ljava/lang/StringBuilder;->append(J)Ljava/lang/StringBuilder;
-        
-            invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-        
-            move-result-object v1
-        
-            const/4 v2, 0x0
-        
-            invoke-virtual {v0, v1, v2}, Landroid/app/Application;->getSharedPreferences(Ljava/lang/String;I)Landroid/content/SharedPreferences;
-        
-            move-result-object v0
-            :try_end_0
-            .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
-        
-            return-object v0
-        
-            :catch_0
-            const/4 v0, 0x0
-        
-            return-object v0
-        .end method
-        
-        .method private final getTmdbApiKey()Ljava/lang/String;
-            .locals 3
-        
-            invoke-direct {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getPreferences()Landroid/content/SharedPreferences;
-        
-            move-result-object v0
-        
-            if-nez v0, :cond_0
-        
-            const-string v0, ""
-        
-            return-object v0
-        
-            :cond_0
-            const-string v1, "tmdb_api_key"
-        
-            const-string v2, ""
-        
-            invoke-interface {v0, v1, v2}, Landroid/content/SharedPreferences;->getString(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
-        
-            move-result-object v0
-        
-            return-object v0
-        .end method
-        
-        .method private final getTmdbImageUrl(Ljava/lang/String;)Ljava/lang/String;
-            .locals 6
-        
-            invoke-direct {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getTmdbApiKey()Ljava/lang/String;
-        
-            move-result-object v0
-        
-            invoke-static {v0}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
-        
-            move-result v1
-        
-            if-eqz v1, :cond_0
-        
-            const/4 p1, 0x0
-        
-            return-object p1
-        
-            :cond_0
-            new-instance v1, Ljava/lang/StringBuilder;
-        
-            invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
-        
-            const-string v2, "https://api.themoviedb.org/3/search/multi?api_key="
-        
-            invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        
-            invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        
-            const-string v0, "&query="
-        
-            invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        
-            invoke-static {p1}, Landroid/net/Uri;->encode(Ljava/lang/String;)Ljava/lang/String;
-        
-            move-result-object p1
-        
-            invoke-virtual {v1, p1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        
-            invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-        
-            move-result-object p1
-        
-            new-instance v0, Lokhttp3/Request$Builder;
-        
-            invoke-direct {v0}, Lokhttp3/Request$Builder;-><init>()V
-        
-            invoke-virtual {v0, p1}, Lokhttp3/Request$Builder;->url(Ljava/lang/String;)Lokhttp3/Request$Builder;
-        
-            move-result-object p1
-        
-            invoke-virtual {p1}, Lokhttp3/Request$Builder;->build()Lokhttp3/Request;
-        
-            move-result-object p1
-        
-            :try_start_0
-            invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getClient()Lokhttp3/OkHttpClient;
-        
-            move-result-object v0
-        
-            invoke-virtual {v0, p1}, Lokhttp3/OkHttpClient;->newCall(Lokhttp3/Request;)Lokhttp3/Call;
-        
-            move-result-object p1
-        
-            invoke-interface {p1}, Lokhttp3/Call;->execute()Lokhttp3/Response;
-        
-            move-result-object p1
-        
-            invoke-virtual {p1}, Lokhttp3/Response;->body()Lokhttp3/ResponseBody;
-        
-            move-result-object v0
-        
-            if-eqz v0, :cond_1
-        
-            invoke-virtual {v0}, Lokhttp3/ResponseBody;->string()Ljava/lang/String;
-        
-            move-result-object v0
-        
-            const-string v1, "\"poster_path\":\"([^\"]+)\""
-        
-            const/4 v2, 0x2
-        
-            invoke-static {v1, v2}, Ljava/util/regex/Pattern;->compile(Ljava/lang/String;I)Ljava/util/regex/Pattern;
-        
-            move-result-object v1
-        
-            invoke-virtual {v1, v0}, Ljava/util/regex/Pattern;->matcher(Ljava/lang/CharSequence;)Ljava/util/regex/Matcher;
-        
-            move-result-object v0
-        
-            invoke-virtual {v0}, Ljava/util/regex/Matcher;->find()Z
-        
-            move-result v1
-        
-            if-eqz v1, :cond_1
-        
-            const/4 v1, 0x1
-        
-            invoke-virtual {v0, v1}, Ljava/util/regex/Matcher;->group(I)Ljava/lang/String;
-        
-            move-result-object v0
-        
-            new-instance v1, Ljava/lang/StringBuilder;
-        
-            invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
-        
-            const-string v2, "https://image.tmdb.org/t/p/w500"
-        
-            invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        
-            invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-        
-            invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-        
-            move-result-object v0
-            :try_end_0
-            .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
-        
-            return-object v0
-        
-            :cond_1
-            :catch_0
-            const/4 p1, 0x0
-        
-            return-object p1
-        .end method
+    invoke-static {p1, v0, v2, v1, v2}, Leu/kanade/tachiyomi/network/RequestsKt;->GET$default(Ljava/lang/String;Lokhttp3/Headers;Lokhttp3/CacheControl;ILjava/lang/Object;)Lokhttp3/Request;
+    move-result-object p1
+    return-object p1
+.end method
+
 .method public videoListParse(Lokhttp3/Response;)Ljava/util/List;
     .locals 1
     new-instance v0, Ljava/util/ArrayList;
