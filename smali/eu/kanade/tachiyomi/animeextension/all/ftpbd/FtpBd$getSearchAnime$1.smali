@@ -24,7 +24,7 @@
 .end annotation
 
 .annotation runtime Lkotlin/coroutines/jvm/internal/DebugMetadata;
-    c = "eu.kanade.tachiyomi.animeextension.all.dflix.FtpBd"
+    c = "eu.kanade.tachiyomi.animeextension.all.ftpbd.FtpBd"
     f = "FtpBd.kt"
     i = {
         0x0,

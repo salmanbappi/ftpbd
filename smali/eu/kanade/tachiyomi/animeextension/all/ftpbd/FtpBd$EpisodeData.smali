@@ -45,7 +45,7 @@
         "hashCode",
         "",
         "toString",
-        "aniyomi-all.dflix-v14.18_release"
+        "aniyomi-all.ftpbd-v14.18_release"
     }
     k = 0x1
     mv = {

@@ -52,7 +52,7 @@
 .end annotation
 
 .annotation runtime Lkotlin/coroutines/jvm/internal/DebugMetadata;
-    c = "eu.kanade.tachiyomi.animeextension.all.dflix.FtpBd$getSearchAnime$2$moviesDeferred$1"
+    c = "eu.kanade.tachiyomi.animeextension.all.ftpbd.FtpBd$getSearchAnime$2$moviesDeferred$1"
     f = "FtpBd.kt"
     i = {}
     l = {

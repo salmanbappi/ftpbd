@@ -27,7 +27,7 @@
         "getCookiesHeaders",
         "",
         "getCookiesSafe",
-        "aniyomi-all.dflix-v14.18_release"
+        "aniyomi-all.ftpbd-v14.18_release"
     }
     k = 0x1
     mv = {
@@ -69,7 +69,7 @@
     .line 10
     sget-object v0, Lokhttp3/HttpUrl;->Companion:Lokhttp3/HttpUrl$Companion;
 
-    const-string v1, "https://dflix.discoveryftp.net/login/demo"
+    const-string v1, "https://ftpbd.discoveryftp.net/login/demo"
 
     invoke-virtual {v0, v1}, Lokhttp3/HttpUrl$Companion;->get(Ljava/lang/String;)Lokhttp3/HttpUrl;
 
