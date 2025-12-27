@@ -655,14 +655,7 @@
 .method private final getCookieHeader()Ljava/lang/String;
     .locals 1
 
-    .line 45
-    invoke-direct {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getCm()Leu/kanade/tachiyomi/animeextension/all/ftpbd/CookieManager;
-
-    move-result-object v0
-
-    invoke-virtual {v0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/CookieManager;->getCookiesHeaders()Ljava/lang/String;
-
-    move-result-object v0
+    const-string v0, ""
 
     return-object v0
 .end method
