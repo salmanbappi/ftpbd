@@ -224,9 +224,10 @@
     move-result-object v8
 
     :goto_title
-    check-cast v8, Ljava/lang/CharSequence;
+    move-object v10, v8
+    check-cast v10, Ljava/lang/CharSequence;
 
-    invoke-static {v8}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
+    invoke-static {v10}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
 
     move-result v10
 
@@ -237,32 +238,14 @@
     move-result-object v8
 
     :cond_use_link_text
-    check-cast v8, Ljava/lang/CharSequence;
-
-    invoke-static {v8}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
-
-    move-result v10
-
-    if-eqz v10, :cond_add_item
-
-    goto :goto_loop
-
-:cond_add_item
-    const-string v10, "ftpbd.net"
-
+    move-object v10, v8
     check-cast v10, Ljava/lang/CharSequence;
 
-    check-cast v7, Ljava/lang/CharSequence;
-
-    const/4 v11, 0x0
-
-    const/4 v12, 0x2
-
-    invoke-static {v7, v10, v11, v12, v3}, Lkotlin/text/StringsKt;->contains$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
+    invoke-static {v10}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
 
     move-result v10
 
-    if-nez v10, :cond_actual_add
+    if-eqz v10, :cond_actual_add
 
     goto :goto_loop
 

@@ -1295,39 +1295,37 @@
 
     invoke-virtual {v0}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
     move-result-object v2
-    :goto_search
-    invoke-interface {v2}, Ljava/util/Iterator;->hasNext()Z
-    move-result v0
-    if-eqz v0, :cond_finish
-    invoke-interface {v2}, Ljava/util/Iterator;->next()Ljava/lang/Object;
-    move-result-object v0
-    check-cast v0, Lorg/jsoup/nodes/Element;
-    const-string v3, "h5 a, h2 a, h3 a, .post-image a"
-    invoke-virtual {v0, v3}, Lorg/jsoup/nodes/Element;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
-    move-result-object v3
-    invoke-virtual {v3}, Lorg/jsoup/select/Elements;->first()Lorg/jsoup/nodes/Element;
-    move-result-object v3
-    if-nez v3, :cond_skip_item
-    invoke-virtual {v3}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
-    move-result-object v4
-    const-string v5, "abs:href"
-    invoke-virtual {v3, v5}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
-    move-result-object v3
-    invoke-static {v4}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
-    move-result v5
-    if-eqz v5, :cond_skip_item
-    invoke-static {v3}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
-    move-result v5
-    if-eqz v5, :cond_add_search
-:cond_skip_item
-    goto :goto_search
-:cond_add_search
-    new-instance v5, Leu/kanade/tachiyomi/animesource/model/SAnimeImpl;
-    invoke-direct {v5}, Leu/kanade/tachiyomi/animesource/model/SAnimeImpl;-><init>()V
-    invoke-interface {v5, v4}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
+        :goto_search
+        invoke-interface {v2}, Ljava/util/Iterator;->hasNext()Z
+        move-result v0
+        if-eqz v0, :cond_finish
+        invoke-interface {v2}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+        move-result-object v0
+        check-cast v0, Lorg/jsoup/nodes/Element;
+        const-string v3, "h5 a, h2 a, h3 a, .post-image a"
+        invoke-virtual {v0, v3}, Lorg/jsoup/nodes/Element;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
+        move-result-object v3
+        invoke-virtual {v3}, Lorg/jsoup/select/Elements;->first()Lorg/jsoup/nodes/Element;
+        move-result-object v3
+        if-nez v3, :cond_skip_item
+        invoke-virtual {v3}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
+        move-result-object v4
+        const-string v5, "abs:href"
+        invoke-virtual {v3, v5}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+        move-result-object v3
+        move-object v5, v4
+        check-cast v5, Ljava/lang/CharSequence;
+        invoke-static {v5}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
+        move-result v5
+        if-eqz v5, :cond_add_search
+    :cond_skip_item
+        goto :goto_search
+    :cond_add_search
+        new-instance v5, Leu/kanade/tachiyomi/animesource/model/SAnimeImpl;
+        invoke-direct {v5}, Leu/kanade/tachiyomi/animesource/model/SAnimeImpl;-><init>()V
+        invoke-interface {v5, v4}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
         invoke-interface {v5, v3}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setUrl(Ljava/lang/String;)V
-    
-        const-string v3, "img[src~=(?i)a11|a_al|poster|banner|thumb], .post-image img, img:not([src~=(?i)back|folder|parent|icon|/icons/])"
+            const-string v3, "img[src~=(?i)a11|a_al|poster|banner|thumb], .post-image img, img:not([src~=(?i)back|folder|parent|icon|/icons/])"
     
         invoke-virtual {v0, v3}, Lorg/jsoup/nodes/Element;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     
@@ -1509,7 +1507,7 @@
 
 .method protected popularAnimeRequest(I)Lokhttp3/Request;
     .locals 4
-    const-string v0, "https://server3.ftpbd.net/FTP-3/"
+    const-string v0, "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/"
     invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getHeaders()Lokhttp3/Headers;
     move-result-object v1
     const/4 v2, 0x0
