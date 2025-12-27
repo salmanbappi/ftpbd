@@ -126,6 +126,14 @@
 
     iget-object v6, v0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$query:Ljava/lang/String;
 
+    const-string v7, " "
+
+    const-string v8, "."
+
+    invoke-virtual {v6, v7, v8}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+
+    move-result-object v6
+
     invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     const-string v6, "\",\"ignorecase\":true}}"
