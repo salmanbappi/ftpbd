@@ -1286,7 +1286,7 @@
     new-instance v1, Ljava/util/ArrayList;
     invoke-direct {v1}, Ljava/util/ArrayList;-><init>()V
 
-    const-string v0, "div.card"
+    const-string v0, "div.card, article"
     invoke-virtual {p1, v0}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     move-result-object v0
     invoke-virtual {v0}, Lorg/jsoup/select/Elements;->isEmpty()Z
@@ -1302,13 +1302,18 @@
     invoke-interface {v2}, Ljava/util/Iterator;->next()Ljava/lang/Object;
     move-result-object v0
     check-cast v0, Lorg/jsoup/nodes/Element;
-    const-string v3, "h5 a"
+    const-string v3, "h5 a, h2 a, h3 a, .post-image a"
     invoke-virtual {v0, v3}, Lorg/jsoup/nodes/Element;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     move-result-object v3
-    invoke-virtual {v3}, Lorg/jsoup/select/Elements;->text()Ljava/lang/String;
+    invoke-virtual {v3}, Lorg/jsoup/select/Elements;->first()Lorg/jsoup/nodes/Element;
+    move-result-object v3
+    if-nez v3, :cond_goto_search
+    goto :goto_search
+:cond_goto_search
+    invoke-virtual {v3}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
     move-result-object v4
     const-string v5, "abs:href"
-    invoke-virtual {v3, v5}, Lorg/jsoup/select/Elements;->attr(Ljava/lang/String;)Ljava/lang/String;
+    invoke-virtual {v3, v5}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
     move-result-object v3
     invoke-static {v4}, Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z
     move-result v5
@@ -1326,7 +1331,7 @@
     invoke-interface {v5, v4}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setTitle(Ljava/lang/String;)V
         invoke-interface {v5, v3}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setUrl(Ljava/lang/String;)V
     
-        const-string v3, "img[src~=(?i)a11|a_al|poster|banner|thumb], img:not([src~=(?i)back|folder|parent|icon|/icons/])"
+        const-string v3, "img[src~=(?i)a11|a_al|poster|banner|thumb], .post-image img, img:not([src~=(?i)back|folder|parent|icon|/icons/])"
     
         invoke-virtual {v0, v3}, Lorg/jsoup/nodes/Element;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     
