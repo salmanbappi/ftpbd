@@ -56,6 +56,7 @@ jobs:
           fi
           export PATH=$PATH:$BUILD_TOOLS_DIR
           apktool b . -o ftpbd-unsigned.apk
+          ls -R
 
       - name: Sign APK
         run: |
