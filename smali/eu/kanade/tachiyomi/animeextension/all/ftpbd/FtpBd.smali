@@ -1365,7 +1365,7 @@
     goto :goto_search
 
 :cond_dir_listing
-    const-string v0, "a"
+    const-string v0, "#fallback table tr, div.entry-content a"
     invoke-virtual {p1, v0}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     move-result-object v0
     invoke-virtual {v0}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
@@ -1378,6 +1378,12 @@
     invoke-interface {v3}, Ljava/util/Iterator;->next()Ljava/lang/Object;
     move-result-object v0
     check-cast v0, Lorg/jsoup/nodes/Element;
+    const-string v4, "td.fb-n a"
+    invoke-virtual {v0, v4}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
+    move-result-object v4
+    if-eqz v4, :cond_use_raw_a
+    move-object v0, v4
+:cond_use_raw_a
     invoke-virtual {v0}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
     move-result-object v7
     const-string v8, "modern browsers"
@@ -1502,7 +1508,7 @@
 
 .method protected popularAnimeRequest(I)Lokhttp3/Request;
     .locals 4
-    const-string v0, "https://server2.ftpbd.net/DHAKA-FLIX-14/Hindi Movies/(2025)/"
+    const-string v0, "https://server3.ftpbd.net/FTP-3/"
     invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getHeaders()Lokhttp3/Headers;
     move-result-object v1
     const/4 v2, 0x0
