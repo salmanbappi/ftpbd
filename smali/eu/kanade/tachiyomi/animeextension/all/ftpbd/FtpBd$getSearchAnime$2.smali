@@ -95,10 +95,9 @@
     invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
 :cond_add_pre_slash
-
     invoke-virtual {v5, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v6, "/\",\"pattern\":\""
+    const-string v6, "/","pattern":""
 
     move-object v7, v2
 
@@ -120,17 +119,16 @@
 
     if-eqz v7, :cond_add_pat_pre
 
-    const-string v6, "pattern\":\""
+    const-string v6, "pattern":""
 
 :cond_add_pat_pre
-
     invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     iget-object v6, v0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$query:Ljava/lang/String;
 
     invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v6, "\",\"ignorecase\":true}}"
+    const-string v6, "","ignorecase":true}}"
 
     invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
@@ -467,55 +465,54 @@
 
     invoke-static {p1}, Lkotlin/ResultKt;->throwOnFailure(Ljava/lang/Object;)V
 
-    new-instance p1, Ljava/util/ArrayList;
+    new-instance v0, Ljava/util/ArrayList;
 
-    invoke-direct {p1}, Ljava/util/ArrayList;-><init>()V
+    invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
 
-    iget-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$filters:Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;
+    iget-object v1, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$filters:Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;
 
-    const-string v1, ""
+    const-string v2, ""
 
-    invoke-static {v1, v0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/Filters;->getUrl(Ljava/lang/String;Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;)Ljava/lang/String;
+    invoke-static {v2, v1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/Filters;->getUrl(Ljava/lang/String;Leu/kanade/tachiyomi/animesource/model/AnimeFilterList;)Ljava/lang/String;
 
-    move-result-object v0
+    move-result-object v1
 
-    const-string v1, "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/"
+    const-string v2, "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/"
 
-    invoke-static {v0, v1}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
+    invoke-static {v1, v2}, Lkotlin/jvm/internal/Intrinsics;->areEqual(Ljava/lang/Object;Ljava/lang/Object;)Z
 
-    move-result v1
+    move-result v2
 
-    if-eqz v1, :cond_global
+    if-eqz v2, :cond_global
 
-    const-string v0, "https://server2.ftpbd.net"
+    const-string v1, "https://server2.ftpbd.net"
 
-    const-string v1, "FTP-2"
+    const-string v2, "FTP-2"
 
-    invoke-direct {p0, v0, v1, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
+    invoke-direct {p0, v1, v2, v0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
 
-    const-string v0, "https://server3.ftpbd.net"
+    const-string v1, "https://server3.ftpbd.net"
 
-    const-string v1, "FTP-3"
+    const-string v2, "FTP-3"
 
-    invoke-direct {p0, v0, v1, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
+    invoke-direct {p0, v1, v2, v0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
 
-    const-string v0, "https://server4.ftpbd.net"
+    const-string v1, "https://server4.ftpbd.net"
 
-    const-string v1, "FTP-4"
+    const-string v2, "FTP-4"
 
-    invoke-direct {p0, v0, v1, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
+    invoke-direct {p0, v1, v2, v0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
 
-    const-string v0, "https://server5.ftpbd.net"
+    const-string v1, "https://server5.ftpbd.net"
 
-    const-string v1, "FTP-5"
+    const-string v2, "FTP-5"
 
-    invoke-direct {p0, v0, v1, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
+    invoke-direct {p0, v1, v2, v0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
 
     goto :goto_sort
 
 :cond_global
-
-    invoke-static {v0}, Lokhttp3/HttpUrl;->parse(Ljava/lang/String;)Lokhttp3/HttpUrl;
+    invoke-static {v1}, Lokhttp3/HttpUrl;->parse(Ljava/lang/String;)Lokhttp3/HttpUrl;
 
     move-result-object v1
 
@@ -547,29 +544,28 @@
 
     move-result-object v1
 
-    invoke-direct {p0, v2, v1, p1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
+    invoke-direct {p0, v2, v1, v0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->searchOnServer(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;)V
 
 :goto_sort
+    iget-object v1, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
 
-    iget-object v0, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
+    move-object v2, v0
 
-    move-object v1, p1
+    check-cast v2, Ljava/util/List;
 
-    check-cast v1, Ljava/util/List;
+    iget-object v3, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$query:Ljava/lang/String;
 
-    iget-object v2, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getSearchAnime$2;->$query:Ljava/lang/String;
+    invoke-static {v1, v2, v3}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->access$sortByTitle(Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;Ljava/util/List;Ljava/lang/String;)Ljava/util/List;
 
-    invoke-static {v0, v1, v2}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->access$sortByTitle(Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;Ljava/util/List;Ljava/lang/String;)Ljava/util/List;
+    move-result-object v1
 
-    move-result-object p1
+    new-instance v2, Leu/kanade/tachiyomi/animesource/model/AnimesPage;
 
-    new-instance v0, Leu/kanade/tachiyomi/animesource/model/AnimesPage;
+    const/4 v3, 0x0
 
-    const/4 v1, 0x0
+    invoke-direct {v2, v1, v3}, Leu/kanade/tachiyomi/animesource/model/AnimesPage;-><init>(Ljava/util/List;Z)V
 
-    invoke-direct {v0, p1, v1}, Leu/kanade/tachiyomi/animesource/model/AnimesPage;-><init>(Ljava/util/List;Z)V
-
-    return-object v0
+    return-object v2
 
 :cond_err
     new-instance p1, Ljava/lang/IllegalStateException;
