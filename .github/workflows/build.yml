@@ -60,7 +60,7 @@ jobs:
       - name: Sign APK
         run: |
           APKSIGNER=$(find $ANDROID_SDK_ROOT/build-tools -name apksigner | sort -r | head -n 1)
-          "$APKSIGNER" sign --ks keystore.jks --ks-pass "pass:ftpbd" --key-pass "pass:ftpbd" --out ftpbd-${{ env.VERSION_NAME }}.apk ftpbd-unsigned.apk
+          "$APKSIGNER" sign --ks keystore.jks --ks-pass "pass:ftpbd123" --key-pass "pass:ftpbd123" --out ftpbd-${{ env.VERSION_NAME }}.apk ftpbd-unsigned.apk
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
