@@ -1,0 +1,25 @@
+!!brut.androlib.meta.MetaInfo
+apkFileName: ftpbd.apk
+compressionType: false
+doNotCompress:
+- resources.arsc
+- png
+isFrameworkApk: false
+packageInfo:
+  forcedPackageId: '127'
+  renameManifestPackage: null
+sdkInfo:
+  minSdkVersion: '21'
+  targetSdkVersion: '32'
+sharedLibrary: false
+sparseResources: false
+unknownFiles:
+  kotlin-tooling-metadata.json: '8'
+usesFramework:
+  ids:
+  - 1
+  tag: null
+version: 2.12.0
+versionInfo:
+  versionCode: 1001
+  versionName: 14.1001
