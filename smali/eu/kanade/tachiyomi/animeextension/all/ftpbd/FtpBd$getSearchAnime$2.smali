@@ -97,7 +97,7 @@
 :cond_add_pre_slash
     invoke-virtual {v5, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v6, "/","pattern":""
+    const-string v6, "/\",\"pattern\":\""
 
     move-object v7, v2
 
@@ -119,7 +119,7 @@
 
     if-eqz v7, :cond_add_pat_pre
 
-    const-string v6, "pattern":""
+    const-string v6, "pattern\":\""
 
 :cond_add_pat_pre
     invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
@@ -128,7 +128,7 @@
 
     invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v6, "","ignorecase":true}}"
+    const-string v6, "\",\"ignorecase\":true}}"
 
     invoke-virtual {v5, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
@@ -276,7 +276,6 @@
     goto :cond_trim_loop
 
     :cond_trim_done
-
     const-string v10, "/"
 
     invoke-static {v9, v10, v9}, Lkotlin/text/StringsKt;->substringAfterLast(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
@@ -311,6 +310,47 @@
 
     invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
+    move-object v11, v8
+
+    const-string v12, "/"
+
+    check-cast v12, Ljava/lang/CharSequence;
+
+    const/4 v13, 0x0
+
+    const/4 v14, 0x2
+
+    const/4 v15, 0x0
+
+    invoke-static {v11, v12, v13, v14, v15}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
+
+    move-result v11
+
+    if-nez v11, :cond_add_slash
+
+    new-instance v11, Ljava/lang/StringBuilder;
+
+    invoke-direct {v11}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    const-string v8, "/"
+
+    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v8
+
+    :cond_add_slash
+    new-instance v11, Ljava/lang/StringBuilder;
+
+    invoke-direct {v11}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v11, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
     invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
     move-result-object v8
@@ -327,43 +367,11 @@
 
     invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v8, "/"
-
-    move-object v12, v8
-
-    check-cast v12, Ljava/lang/CharSequence;
-
-    const/4 v13, 0x0
-
-    const/4 v14, 0x2
-
-    const/4 v15, 0x0
-
-    move-object v11, v10
-
-    invoke-interface {v11}, Leu/kanade/tachiyomi/animesource/model/SAnime;->getUrl()Ljava/lang/String;
-
-    move-result-object v11
-
-    check-cast v11, Ljava/lang/CharSequence;
-
-    invoke-static {v11, v12, v13, v14, v15}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
-
-    move-result v11
-
-    if-nez v11, :cond_add_url_slash
-
-    const-string v11, "/"
-
-    invoke-virtual {v5, v11}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-:cond_add_url_slash
-
     const-string v8, "a11.jpg"
 
-    invoke-virtual {v5, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    invoke-virtual {v5}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
     move-result-object v8
 
