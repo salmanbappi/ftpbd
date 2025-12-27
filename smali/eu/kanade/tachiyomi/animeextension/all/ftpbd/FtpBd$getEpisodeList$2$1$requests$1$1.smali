@@ -244,25 +244,7 @@
     invoke-static {p1}, Lkotlin/ResultKt;->throwOnFailure(Ljava/lang/Object;)V
 
     .line 218
-    new-instance p1, Ljava/lang/StringBuilder;
-
-    invoke-direct {p1}, Ljava/lang/StringBuilder;-><init>()V
-
-    iget-object v1, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getEpisodeList$2$1$requests$1$1;->this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
-
-    invoke-virtual {v1}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getBaseUrl()Ljava/lang/String;
-
-    move-result-object v1
-
-    invoke-virtual {p1, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    iget-object v1, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getEpisodeList$2$1$requests$1$1;->$link:Ljava/lang/String;
-
-    invoke-virtual {p1, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    invoke-virtual {p1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object p1
+    iget-object p1, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getEpisodeList$2$1$requests$1$1;->$link:Ljava/lang/String;
 
     iget-object v1, p0, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$getEpisodeList$2$1$requests$1$1;->this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
 

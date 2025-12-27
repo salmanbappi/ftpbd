@@ -314,18 +314,85 @@
     move-result v5
     if-eqz v5, :goto_skip
 
-    const-string v5, "abs:href"
-    invoke-virtual {v3, v5}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
-    move-result-object v2
+        const-string v5, "abs:href"
 
-    const-string v3, ".mkv"
-    invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
-    move-result v3
-    if-nez v3, :cond_is_file
-    const-string v3, ".mp4"
-    invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
-    move-result v3
-    if-eqz v3, :cond_check_dir
+    
+
+        invoke-virtual {v3, v5}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
+
+    
+
+        move-result-object v2
+
+    
+
+        const-string v3, "\\"
+
+    
+
+        const-string v4, "/"
+
+    
+
+        const/4 v5, 0x0
+
+    
+
+        const/4 v6, 0x4
+
+    
+
+        const/4 v7, 0x0
+
+    
+
+        invoke-static/range {v2 .. v7}, Lkotlin/text/StringsKt;->replace$default(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
+
+    
+
+        move-result-object v2
+
+    
+
+        const-string v3, "(?i).*[.](mkv|mp4|avi|webm)$"
+
+    
+
+        new-instance v4, Lkotlin/text/Regex;
+
+    
+
+        invoke-direct {v4, v3}, Lkotlin/text/Regex;-><init>(Ljava/lang/String;)V
+
+    
+
+        move-object v3, v2
+
+    
+
+        check-cast v3, Ljava/lang/CharSequence;
+
+    
+
+        invoke-virtual {v4, v3}, Lkotlin/text/Regex;->matches(Ljava/lang/CharSequence;)Z
+
+    
+
+        move-result v3
+
+    
+
+        if-eqz v3, :cond_is_file
+
+    
+
+        const/4 v3, 0x0
+
+    
+
+        if-eqz v3, :cond_check_dir
+
+    
 
     :cond_is_file
     const-string v3, "https://old.ftpbd.net"
@@ -335,25 +402,58 @@
     const/4 v7, 0x0
     invoke-static/range {v2 .. v7}, Lkotlin/text/StringsKt;->replace$default(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
     move-result-object v5
-    new-instance v3, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
-    const-string v4, "Download"
-    const-string v6, ""
-    const-string v7, "File"
-    const-string v8, "Direct"
-    invoke-direct/range {v3 .. v8}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+        const-string v3, "/"
+    
+        invoke-static {v5, v3}, Lkotlin/text/StringsKt;->substringAfterLast(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+    
+        move-result-object v4
+    
+        new-instance v3, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;
+    
+        const-string v6, ""
+    
+        const-string v7, "File"
+    
+        const-string v8, "Direct"
+    
+        invoke-direct/range {v3 .. v8}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd$EpisodeData;-><init>(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+    
     invoke-interface {v0, v3}, Ljava/util/List;->add(Ljava/lang/Object;)Z
     goto :link_loop
 
-    :cond_check_dir
-    invoke-interface {v0}, Ljava/util/List;->isEmpty()Z
-    move-result v3
-    if-nez v3, :goto_skip
+            :cond_check_dir
 
-    const-string v3, "/"
-    invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
-    move-result v3
-    if-nez v3, :cond_really_dir
-    goto :link_loop
+            const-string v3, "/"
+
+        
+
+            invoke-virtual {v2, v3}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+
+        
+
+            move-result v3
+
+        
+
+            if-nez v3, :cond_check_dir_skip
+
+        
+
+            goto :cond_really_dir
+
+        
+
+            :cond_check_dir_skip
+
+            goto :link_loop
+
+        
+
+    
+
+        goto :link_loop
+
+    
 
     :cond_really_dir
     :try_start
@@ -396,15 +496,29 @@
     move-result-object v8
     invoke-virtual {v5}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
     move-result-object v10
-    const-string v5, ".mkv"
-    invoke-virtual {v8, v5}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
-    move-result v5
-    if-nez v5, :cond_is_dir_file
-    const-string v5, ".mp4"
-    invoke-virtual {v8, v5}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
-    move-result v5
-    if-eqz v5, :dir_loop
-    :cond_is_dir_file
+        const-string v5, "(?i).*[.](mkv|mp4|avi|webm)$"
+    
+        new-instance v6, Lkotlin/text/Regex;
+    
+        invoke-direct {v6, v5}, Lkotlin/text/Regex;-><init>(Ljava/lang/String;)V
+    
+        move-object v5, v8
+    
+        check-cast v5, Ljava/lang/CharSequence;
+    
+        invoke-virtual {v6, v5}, Lkotlin/text/Regex;->matches(Ljava/lang/CharSequence;)Z
+    
+        move-result v5
+    
+        if-nez v5, :cond_dir_loop_skip
+    
+        goto :cond_is_dir_file
+    
+        :cond_dir_loop_skip
+        goto :dir_loop
+    
+        :cond_is_dir_file
+    
     const-string v5, "td.fb-s"
     invoke-virtual {v4, v5}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
     move-result-object v4
@@ -614,10 +728,28 @@
 
 
 .method private final getMediaType(Lorg/jsoup/nodes/Document;)Ljava/lang/String;
-    .locals 1
+    .locals 2
 
+    invoke-virtual {p1}, Lorg/jsoup/nodes/Document;->location()Ljava/lang/String;
+
+    move-result-object v0
+
+    const-string v1, "/movies/"
+
+    invoke-virtual {v0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v0
+
+    if-eqz v0, :cond_0
+
+    const-string v0, "m"
+
+    goto :goto_0
+
+    :cond_0
     const-string v0, "s"
 
+    :goto_0
     return-object v0
 .end method
 
@@ -832,7 +964,7 @@
         }
     .end annotation
 
-    const-string v0, "div.col-md-12 a.btn"
+    const-string v0, "div.entry-content a[href*='ftpbd.net/FTP-']"
 
     .line 275
     invoke-virtual {p1, v0}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
