@@ -72,12 +72,20 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     override fun popularAnimeParse(response: Response): AnimesPage {
         val document = response.asJsoup()
         val animeList = mutableListOf<SAnime>()
+        val isSearch = response.request.url.toString().contains("?s=")
 
         // Check for directory listing or WordPress grid
         val items = document.select("div.card, article, .jws-post-item, .post-item, .movie-item, .jws-post-wrapper")
         if (items.isNotEmpty()) {
             items.forEach { element ->
                 val link = element.selectFirst("h5 a, h2 a, h3 a, h4 a, .post-image a, .post-media a, a:has(img), .jws-post-image a") ?: return@forEach
+                val url = link.attr("abs:href")
+                
+                // Filter out non-movie results in search
+                if (isSearch && !url.contains("/movies/") && !url.contains("/series/") && !url.contains("/anime/") && !url.contains("ftpbd.net/FTP-")) {
+                   // Optional: check if title contains "Director" or other unwanted terms
+                }
+
                 var title = link.text().trim()
                 if (title.isBlank()) {
                     title = element.selectFirst("h5, h2, h3, h4, .post-title, .movie-title, .jws-post-title")?.text()?.trim() ?: ""
@@ -86,9 +94,8 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                     title = element.selectFirst("img")?.attr("alt")?.trim() ?: ""
                 }
                 
-                if (title.isBlank()) return@forEach
+                if (title.isBlank() || (isSearch && (title.contains("Director", true) || title.contains("Actor", true)))) return@forEach
                 
-                val url = link.attr("abs:href")
                 val anime = SAnime.create().apply {
                     this.title = title
                     this.url = url
@@ -104,14 +111,18 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             }
         } else {
             // Fallback to directory listing
-            document.select("#fallback table tr, div.entry-content a").forEach { it ->
+            val docUrl = document.location()
+            document.select("#fallback table tr, div.entry-content a, table tr").forEach { it ->
                 val link = it.selectFirst("td.fb-n a") ?: if (it.tagName() == "a") it else null
                 link?.let {
                     var title = it.text().trim()
                     if (isIgnored(title)) return@forEach
                     if (title.endsWith("/")) title = title.removeSuffix("/")
                     
-                    val url = it.attr("abs:href")
+                    val url = it.attr("abs:href").ifBlank { 
+                        val href = it.attr("href")
+                        if (href.startsWith("http")) href else docUrl.removeSuffix("/") + "/" + href.removePrefix("/")
+                    }
                     if (url.contains("../") || url.contains("?")) return@forEach
                     
                     val anime = SAnime.create().apply {
@@ -231,10 +242,17 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     private fun extractEpisode(document: Document): List<SEpisode> {
+        val docUrl = document.location()
         return document.select("div.card, div.episode-item, div.download-link").mapNotNull { element ->
             val titleElement = element.selectFirst("h5")
             val name = titleElement?.ownText()?.substringBefore("&nbsp;")?.trim() ?: ""
-            val url = element.selectFirst("h5 a")?.attr("abs:href")?.trim() ?: ""
+            val url = element.selectFirst("h5 a")?.let {
+                val href = it.attr("abs:href")
+                if (href.isBlank()) {
+                    val r = it.attr("href")
+                    if (r.startsWith("http")) r else docUrl.removeSuffix("/") + "/" + r.removePrefix("/")
+                } else href
+            }?.trim() ?: ""
             val quality = element.select("h5 .badge-fill").text().trim()
             val seasonEpisode = element.selectFirst("h4")?.ownText()?.trim() ?: ""
             val size = element.selectFirst("h4 .badge-outline")?.text()?.trim() ?: ""
@@ -251,8 +269,15 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     private fun getMovieMedia(document: Document): List<SEpisode> {
+        val docUrl = document.location()
         val link = document.select("div.col-md-12 a.btn, .movie-buttons a, a[href*=/m/lazyload/], a[href*=/s/lazyload/], .download-link a").lastOrNull()
-        val url = link?.attr("abs:href")?.replace(" ", "%20") ?: ""
+        val url = link?.let {
+            val href = it.attr("abs:href")
+            if (href.isBlank()) {
+                val r = it.attr("href")
+                if (r.startsWith("http")) r else docUrl.removeSuffix("/") + "/" + r.removePrefix("/")
+            } else href
+        }?.replace(" ", "%20") ?: ""
         val quality = document.select(".badge-wrapper .badge-fill").lastOrNull()?.text()?.replace("|", "")?.trim() ?: ""
         
         return listOf(SEpisode.create().apply {
@@ -274,7 +299,10 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         if (!visited.add(currentUrl)) return
 
         document.select("a[href]").forEach { link ->
-            val href = link.attr("abs:href")
+            val href = link.attr("abs:href").ifBlank {
+                val r = link.attr("href")
+                if (r.startsWith("http")) r else currentUrl.removeSuffix("/") + "/" + r.removePrefix("/")
+            }
             val text = link.text().trim()
             if (isIgnored(text) || href.contains("?")) return@forEach
             
