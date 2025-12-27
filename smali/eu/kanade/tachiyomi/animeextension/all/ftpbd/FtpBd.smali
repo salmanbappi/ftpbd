@@ -1365,7 +1365,7 @@
     goto :goto_search
 
 :cond_dir_listing
-    const-string v0, "#fallback table tr, div.entry-content a"
+    const-string v0, "#fallback table tr, div.entry-content a, td.fb-n a"
     invoke-virtual {p1, v0}, Lorg/jsoup/nodes/Document;->select(Ljava/lang/String;)Lorg/jsoup/select/Elements;
     move-result-object v0
     invoke-virtual {v0}, Lorg/jsoup/select/Elements;->iterator()Ljava/util/Iterator;
@@ -1378,72 +1378,59 @@
     invoke-interface {v3}, Ljava/util/Iterator;->next()Ljava/lang/Object;
     move-result-object v0
     check-cast v0, Lorg/jsoup/nodes/Element;
-    const-string v4, "td.fb-n a"
-    invoke-virtual {v0, v4}, Lorg/jsoup/nodes/Element;->selectFirst(Ljava/lang/String;)Lorg/jsoup/nodes/Element;
-    move-result-object v4
-    if-eqz v4, :cond_use_raw_a
-    move-object v0, v4
-:cond_use_raw_a
     invoke-virtual {v0}, Lorg/jsoup/nodes/Element;->text()Ljava/lang/String;
     move-result-object v7
     const-string v8, "modern browsers"
     invoke-virtual {v7, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
     move-result v8
-    if-nez v8, :cond_0
-    const-string v8, "Modern browsers"
-    invoke-virtual {v7, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-    move-result v8
-    if-nez v8, :cond_0
-    const-string v8, "powered by SamOnline"
-    invoke-virtual {v7, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-    move-result v8
-    if-nez v8, :cond_0
-    const-string v8, "powered by Sam online"
-    invoke-virtual {v7, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-    move-result v8
-    if-nez v8, :cond_0
-    const-string v8, "Powered by Sam online"
-    invoke-virtual {v7, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-    move-result v8
-    if-nez v8, :cond_0
-    const-string v8, "JavaScript"
-    invoke-virtual {v7, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-    move-result v8
-    if-nez v8, :cond_0
+    if-eqz v8, :cond_skip
+    goto :goto_0
+:cond_skip
     const-string v8, "Parent Directory"
     invoke-virtual {v7, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
     move-result v8
-    if-nez v8, :cond_0
-    const-string v8, "Name"
-    invoke-virtual {v7, v8}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-    move-result v8
-    if-nez v8, :cond_0
-    const-string v8, "Last modified"
-    invoke-virtual {v7, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-    move-result v8
-    if-nez v8, :cond_0
-    const-string v8, "Size"
-    invoke-virtual {v7, v8}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-    move-result v8
-    if-nez v8, :cond_0
-    const-string v8, "Description"
-    invoke-virtual {v7, v8}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-    move-result v8
-    if-nez v8, :cond_0
+    if-eqz v8, :cond_skip2
+    goto :goto_0
+:cond_skip2
     const-string v8, "Index of"
     invoke-virtual {v7, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
     move-result v8
-    if-nez v8, :cond_0
+    if-eqz v8, :cond_skip3
+    goto :goto_0
+:cond_skip3
+    const-string v8, "Last modified"
+    invoke-virtual {v7, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+    move-result v8
+    if-eqz v8, :cond_skip4
+    goto :goto_0
+:cond_skip4
+    const-string v8, "Size"
+    invoke-virtual {v7, v8}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    move-result v8
+    if-eqz v8, :cond_skip5
+    goto :goto_0
+:cond_skip5
+    const-string v8, "Name"
+    invoke-virtual {v7, v8}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    move-result v8
+    if-eqz v8, :cond_skip6
+    goto :goto_0
+:cond_skip6
     const-string v4, "abs:href"
     invoke-virtual {v0, v4}, Lorg/jsoup/nodes/Element;->attr(Ljava/lang/String;)Ljava/lang/String;
     move-result-object v4
     const-string v5, "../"
     invoke-virtual {v4, v5}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
     move-result v5
-    if-nez v5, :cond_0
+    if-eqz v5, :cond_skip7
+    goto :goto_0
+:cond_skip7
     const-string v5, "?"
     invoke-virtual {v4, v5}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
     move-result v5
+    if-eqz v5, :cond_skip8
+    goto :goto_0
+:cond_skip8
     new-instance v5, Leu/kanade/tachiyomi/animesource/model/SAnimeImpl;
     invoke-direct {v5}, Leu/kanade/tachiyomi/animesource/model/SAnimeImpl;-><init>()V
     move-object v6, v7
@@ -1483,6 +1470,18 @@
 :cond_add_slash
     const-string v6, "a11.jpg"
     invoke-virtual {v0, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    move-result-object v0
+    const-string v6, " "
+    const-string v7, "%20"
+    const/4 v8, 0x0
+    const/4 v9, 0x4
+    const/4 v10, 0x0
+    invoke-static/range {v0 .. v5}, Lkotlin/text/StringsKt;->replace$default(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ljava/lang/String;
+    move-result-object v0
+    invoke-interface {v5, v0}, Leu/kanade/tachiyomi/animesource/model/SAnime;->setThumbnail_url(Ljava/lang/String;)V
+    invoke-virtual {v1, v5}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
+    goto/16 :goto_0
     invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
     move-result-object v6 # source string
     const-string v7, " "
