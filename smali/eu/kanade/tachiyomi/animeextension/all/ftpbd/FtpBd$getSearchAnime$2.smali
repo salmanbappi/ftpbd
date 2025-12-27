@@ -274,7 +274,7 @@
 
     invoke-virtual {v1, v10}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
 
-    goto/16 :cond_loop
+    goto/16 :goto_loop
 
 :cond_finish
     new-instance p1, Leu/kanade/tachiyomi/animesource/model/AnimesPage;
