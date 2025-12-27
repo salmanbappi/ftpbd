@@ -80,7 +80,9 @@
 
 :cond_search
     if-nez p1, :cond_default
-    const-string p0, "https://server3.ftpbd.net/FTP-3/"
+
+    const-string p0, "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/"
+
     return-object p0
 
 :cond_default

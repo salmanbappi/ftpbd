@@ -1500,7 +1500,7 @@
 .method protected popularAnimeRequest(I)Lokhttp3/Request;
     .locals 4
     const-string v0, "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/"
-    invoke-virtual {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getHeaders()Lokhttp3/Headers;
+    invoke-direct {p0}, Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;->getGlobalHeaders()Lokhttp3/Headers;
     move-result-object v1
     const/4 v2, 0x0
     const/4 v3, 0x4

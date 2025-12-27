@@ -69,7 +69,7 @@
     .line 10
     sget-object v0, Lokhttp3/HttpUrl;->Companion:Lokhttp3/HttpUrl$Companion;
 
-    const-string v1, "https://server3.ftpbd.net/"
+    const-string v1, "https://ftpbd.net/"
 
     invoke-virtual {v0, v1}, Lokhttp3/HttpUrl$Companion;->get(Ljava/lang/String;)Lokhttp3/HttpUrl;
 
