@@ -501,6 +501,9 @@
     return-object p0
 .end method
 
+    return-object p0
+.end method
+
 .method public static final synthetic access$sortByTitle$diceCoefficient(Ljava/lang/String;Ljava/lang/String;)D
     .locals 0
 
