@@ -60,7 +60,7 @@ jobs:
       - name: Sign APK
         run: |
           APKSIGNER=$(find $ANDROID_SDK_ROOT/build-tools -name apksigner | sort -r | head -n 1)
-          "$APKSIGNER" sign --ks keystore.jks --ks-pass "pass:ftpbd123" --key-pass "pass:ftpbd123" --alias dflix --out ftpbd-${{ env.VERSION_NAME }}.apk ftpbd-unsigned.apk
+          "$APKSIGNER" sign --ks keystore.jks --ks-pass "pass:ftpbd123" --key-pass "pass:ftpbd123" --ks-key-alias dflix --out ftpbd-${{ env.VERSION_NAME }}.apk ftpbd-unsigned.apk
           ls -lh ftpbd-${{ env.VERSION_NAME }}.apk
 
       - name: Create Release

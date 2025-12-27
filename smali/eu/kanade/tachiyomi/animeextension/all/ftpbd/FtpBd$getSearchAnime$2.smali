@@ -168,7 +168,7 @@
 
     move-result-object v7
 
-    const-string v8, "\"href\":\"([^\"]+)\""
+    const-string v8, "\"href\":\"([^"]+)\""
 
     const/4 v9, 0x2
 
@@ -482,7 +482,7 @@
 
     const/4 v1, 0x0
 
-    invoke-direct {v0, p1, v1}, Leu/kanade/tachiyomi/animesource/model/AnimesPage;-><init>(Ljava/util/List;Z)V
+    invoke-direct {v0, p1, v1}, Leu/kanade/tachiyomi/animesource/model/AnimesPage;-><init>(Ljava/util/List;Z)
 
     return-object v0
 
