@@ -17,7 +17,7 @@ fun Project.getDependents(): Set<Project> {
                     // Only check resolvable configurations that can have dependencies
                     if (configuration.isCanBeResolved) {
                         configuration.dependencies.forEach { dependency ->
-                            if (dependency is ProjectDependency && dependency.path == path) {
+                            if (dependency is ProjectDependency && dependency.dependencyProject.path == this@getDependents.path) {
                                 dependentProjects.add(project)
                             }
                         }
