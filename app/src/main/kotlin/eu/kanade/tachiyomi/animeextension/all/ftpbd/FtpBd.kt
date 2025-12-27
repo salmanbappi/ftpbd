@@ -67,20 +67,25 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         get() = preferences.getString("tmdb_api_key", "")?.takeIf { it.isNotBlank() } ?: "5cd49aeaf94161b1e7badb23820f6ea9"
 
     // ============================== Popular ===============================
-    override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/FTP-3/Hindi%20Movies/2025/", globalHeaders)
+    override fun popularAnimeRequest(page: Int): Request = GET("https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/", globalHeaders)
 
     override fun popularAnimeParse(response: Response): AnimesPage {
         val document = response.asJsoup()
         val animeList = mutableListOf<SAnime>()
 
         // Check for directory listing or WordPress grid
-        val items = document.select("div.card, article, .jws-post-item, .post-item, .movie-item")
+        val items = document.select("div.card, article, .jws-post-item, .post-item, .movie-item, .jws-post-wrapper")
         if (items.isNotEmpty()) {
             items.forEach { element ->
-                val link = element.selectFirst("h5 a, h2 a, h3 a, h4 a, .post-image a, .post-media a, a:has(img)") ?: return@forEach
-                val title = link.text().trim().ifBlank { 
-                    element.selectFirst("img")?.attr("alt")?.trim() ?: "" 
+                val link = element.selectFirst("h5 a, h2 a, h3 a, h4 a, .post-image a, .post-media a, a:has(img), .jws-post-image a") ?: return@forEach
+                var title = link.text().trim()
+                if (title.isBlank()) {
+                    title = element.selectFirst("h5, h2, h3, h4, .post-title, .movie-title, .jws-post-title")?.text()?.trim() ?: ""
                 }
+                if (title.isBlank()) {
+                    title = element.selectFirst("img")?.attr("alt")?.trim() ?: ""
+                }
+                
                 if (title.isBlank()) return@forEach
                 
                 val url = link.attr("abs:href")
@@ -88,7 +93,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                     this.title = title
                     this.url = url
                     
-                    val img = element.selectFirst("img[src~=(?i)a11|a_al|poster|banner|thumb], .post-image img, .post-media img, img:not([src~=(?i)back|folder|parent|icon|/icons/])")
+                    val img = element.selectFirst("img[src~=(?i)a11|a_al|poster|banner|thumb], .post-image img, .post-media img, .jws-post-image img, img:not([src~=(?i)back|folder|parent|icon|/icons/])")
                     val rawThumb = img?.attr("abs:data-src")?.ifBlank { null }
                         ?: img?.attr("abs:data-lazy-src")?.ifBlank { null }
                         ?: img?.attr("abs:src")
@@ -134,7 +139,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     // =============================== Search ===============================
     override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request {
         val url = if (query.isNotBlank()) {
-            baseUrl.toHttpUrl().newBuilder().apply {
+            "https://ftpbd.net/".toHttpUrl().newBuilder().apply {
                 addQueryParameter("s", query)
             }.build().toString()
         } else {
