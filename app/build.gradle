@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    namespace = "eu.kanade.tachiyomi.animeextension.bn.ftpbd"
+    namespace = "eu.kanade.tachiyomi.animeextension.all.ftpbd"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "eu.kanade.tachiyomi.animeextension.bn.ftpbd"
+        applicationId = "eu.kanade.tachiyomi.animeextension.all.ftpbd"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1286
-        versionName = "14.1286"
+        versionCode = 1287
+        versionName = "14.1287"
 
         manifestPlaceholders = [
             appName: "FtpBd",
@@ -28,10 +28,19 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            storeFile file("../keystore.jks")
+            storePassword "ftpbd123"
+            keyAlias "dflix"
+            keyPassword "ftpbd123"
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 
