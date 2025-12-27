@@ -46,8 +46,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation(project(":lib:playlist-utils"))
-    compileOnly(libs.aniyomi.lib)
-    implementation(libs.bundles.common)
+    implementation project(":core")
+    implementation project(":lib:playlist-utils")
+    compileOnly libs.bundles.provided
+    implementation libs.bundles.common
 }

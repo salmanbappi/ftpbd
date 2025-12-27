@@ -26,5 +26,7 @@ android {
 }
 
 dependencies {
-    compileOnly(versionCatalogs.named("libs").findBundle("common").get())
+    val libs = versionCatalogs.named("libs")
+    compileOnly(libs.findBundle("provided").get())
+    compileOnly(libs.findBundle("common").get())
 }
