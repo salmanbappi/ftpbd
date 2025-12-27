@@ -17,7 +17,7 @@ def monitor_build():
     print(f"Commit: {commit_hash}")
 
     print("Pushing changes to GitHub...")
-    push = run_cmd("git push origin master --force")
+    push = run_cmd("git push origin main --force")
     if push.returncode != 0:
         print(f"Push failed: {push.stderr}")
         return False

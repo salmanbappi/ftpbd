@@ -14,18 +14,24 @@ android {
         targetSdk = 34
         versionCode = 1286
         versionName = "14.1286"
+
+        manifestPlaceholders = [
+            appName: "FtpBd",
+            extClass: ".FtpBd",
+            nsfw: "0"
+        ]
     }
 
     sourceSets {
-        getByName("main") {
-            java.setSrcDirs(listOf("src/main/kotlin"))
+        main {
+            java.srcDirs = ['src/main/kotlin']
         }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
+            minifyEnabled false
+            signingConfig signingConfigs.debug
         }
     }
 

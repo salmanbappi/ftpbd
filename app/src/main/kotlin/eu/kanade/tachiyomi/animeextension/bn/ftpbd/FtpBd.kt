@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.awaitSuccess
+import eu.kanade.tachiyomi.util.asJsoup
 import extensions.utils.addEditTextPreference
 import extensions.utils.getPreferencesLazy
 import kotlinx.coroutines.Dispatchers
@@ -115,7 +116,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             val regex = """"href":"([^"]+)"""".toRegex()
             regex.findAll(text).map {
                 val rawPath = it.groupValues[1]
-                val path = rawPath.replace("\", "/").replace("//+", "/")
+                val path = rawPath.replace("\\", "/").replace("//+", "/")
                 val cleanPath = path.removeSuffix("/")
                 val title = URLDecoder.decode(cleanPath.substringAfterLast("/"), "UTF-8")
                 
