@@ -30,5 +30,5 @@ androidx-preference = { module = "androidx.preference:preference", version = "1.
 androidx-annotation = { module = "androidx.annotation:annotation", version = "1.7.1" }
 
 [bundles]
-provided = ["kotlin-stdlib", "coroutines-core", "coroutines-android", "injekt-core", "okhttp", "aniyomi-lib", "androidx-preference", "androidx-annotation"]
-common = ["kotlin-protobuf", "kotlin-json", "jsoup", "quickjs", "jsunpacker"]
+provided = ["kotlin-stdlib", "coroutines-core", "coroutines-android", "injekt-core", "okhttp", "aniyomi-lib", "androidx-preference", "androidx-annotation", "kotlin-protobuf", "kotlin-json"]
+common = ["jsoup", "quickjs", "jsunpacker"]

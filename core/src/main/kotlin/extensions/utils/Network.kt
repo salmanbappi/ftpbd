@@ -11,10 +11,16 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import okio.ByteString
 import java.util.concurrent.TimeUnit.MINUTES
 
 // TODO: Remove with ext lib 16
+
+fun Response.asJsoup(): Document {
+    return Jsoup.parse(body.string(), request.url.toString())
+}
 
 private val DEFAULT_CACHE_CONTROL = CacheControl.Builder().maxAge(10, MINUTES).build()
 private val DEFAULT_HEADERS = Headers.Builder().build()
