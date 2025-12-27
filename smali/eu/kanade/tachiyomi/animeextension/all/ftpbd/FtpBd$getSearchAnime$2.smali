@@ -17,8 +17,8 @@
 
 # instance fields
 .field final synthetic $query:Ljava/lang/String;
-.field label:I
-.field final synthetic this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
+field label:I
+field final synthetic this$0:Leu/kanade/tachiyomi/animeextension/all/ftpbd/FtpBd;
 
 
 # direct methods
@@ -188,15 +188,19 @@
     :cond_trim_loop
     const-string v10, "/"
 
+    move-object v11, v9
+
+    check-cast v11, Ljava/lang/CharSequence;
+
     check-cast v10, Ljava/lang/CharSequence;
 
-    const/4 v11, 0x0
+    const/4 v12, 0x0
 
-    const/4 v12, 0x2
+    const/4 v13, 0x2
 
-    const/4 v13, 0x0
+    const/4 v14, 0x0
 
-    invoke-static {v9, v10, v11, v12, v13}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
+    invoke-static {v11, v10, v12, v13, v14}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
 
     move-result v10
 
@@ -210,11 +214,13 @@
 
     add-int/lit8 v10, v10, -0x1
 
+    const/4 v11, 0x0
+
     invoke-virtual {v9, v11, v10}, Ljava/lang/String;->substring(II)Ljava/lang/String;
 
     move-result-object v9
 
-    goto :goto_trim_loop
+    goto :cond_trim_loop
 
     :cond_trim_done
     const-string v10, "/"
@@ -251,29 +257,47 @@
 
     invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    const-string v8, "/"
-
-    check-cast v8, Ljava/lang/CharSequence;
-
-    const/4 v12, 0x0
-
-    const/4 v13, 0x2
-
-    const/4 v14, 0x0
-
     move-object v11, v8
 
-    invoke-static {v8, v11, v12, v13, v14}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
+    const-string v12, "/"
 
-    move-result v8
+    check-cast v12, Ljava/lang/CharSequence;
 
-    if-nez v8, :cond_add_slash
+    const/4 v13, 0x0
+
+    const/4 v14, 0x2
+
+    const/4 v15, 0x0
+
+    invoke-static {v11, v12, v13, v14, v15}, Lkotlin/text/StringsKt;->endsWith$default(Ljava/lang/CharSequence;Ljava/lang/CharSequence;ZILjava/lang/Object;)Z
+
+    move-result v11
+
+    if-nez v11, :cond_add_slash
+
+    new-instance v11, Ljava/lang/StringBuilder;
+
+    invoke-direct {v11}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     const-string v8, "/"
 
     invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
+    invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v8
+
     :cond_add_slash
+    new-instance v11, Ljava/lang/StringBuilder;
+
+    invoke-direct {v11}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v11, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
     invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
     move-result-object v8
@@ -444,7 +468,7 @@
 
     const/4 v1, 0x0
 
-    invoke-direct {v0, p1, v1}, Leu/kanade/tachiyomi/animesource/model/AnimesPage;-><init>(Ljava/util/List;Z)
+    invoke-direct {v0, p1, v1}, Leu/kanade/tachiyomi/animesource/model/AnimesPage;-><init>(Ljava/util/List;Z)V
 
     return-object v0
 
