@@ -75,10 +75,6 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         return GET(fixUrl(anime.url), globalHeaders)
     }
 
-    override fun imageRequest(anime: SAnime): Request {
-        return GET(fixUrl(anime.thumbnail_url ?: ""), globalHeaders)
-    }
-
     private val globalHeaders by lazy {
         val cookie = cm.getCookiesHeaders()
         Headers.Builder().apply {
