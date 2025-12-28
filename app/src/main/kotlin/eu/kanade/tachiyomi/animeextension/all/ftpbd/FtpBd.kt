@@ -24,6 +24,12 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.jsoup.nodes.Document
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.IOException
@@ -171,15 +177,73 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     override fun latestUpdatesParse(response: Response): AnimesPage = popularAnimeParse(response)
 
     // =============================== Search ===============================
-    override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request {
-        val url = if (query.isNotBlank()) {
-            "https://ftpbd.net/".toHttpUrl().newBuilder().apply {
-                addQueryParameter("s", query)
-            }.build().toString()
-        } else {
-            Filters.getUrl(query, filters)
+    override suspend fun getSearchAnime(page: Int, query: String, filters: AnimeFilterList): AnimesPage {
+        if (query.isBlank()) return super.getSearchAnime(page, query, filters)
+
+        return kotlinx.coroutines.coroutineScope {
+            val searchPaths = listOf(
+                "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/",
+                "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2024/",
+                "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2023/",
+                "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/Hindi-4K-Movies/",
+                "https://server3.ftpbd.net/FTP-3/Hindi%20TV%20Series/",
+                "https://server3.ftpbd.net/FTP-3/South%20Indian%20Movies/2025/",
+                "https://server3.ftpbd.net/FTP-3/South%20Indian%20Movies/2024/",
+                "https://server3.ftpbd.net/FTP-3/South%20Indian%20TV%20Serias/",
+                "https://server3.ftpbd.net/FTP-3/Foreign%20Language%20Movies/2025/",
+                "https://server3.ftpbd.net/FTP-3/Foreign%20Language%20Movies/2024/",
+                "https://server3.ftpbd.net/FTP-3/Bangla%20Collection/BANGLA/",
+                "https://server3.ftpbd.net/FTP-3/%5BToday%27s%20Upload%5D/"
+            )
+
+            val semaphore = kotlinx.coroutines.sync.Semaphore(15)
+            val results = searchPaths.map { path ->
+                async(Dispatchers.IO) {
+                    semaphore.withPermit {
+                        try {
+                            val response = client.newCall(GET(path, globalHeaders)).execute()
+                            if (!response.isSuccessful) return@withPermit emptyList<SAnime>()
+                            val doc = response.asJsoup()
+                            parseSearchDocument(doc, query, path)
+                        } catch (e: Exception) {
+                            emptyList<SAnime>()
+                        }
+                    }
+                }
+            }.awaitAll().flatten().distinctBy { it.url }
+
+            AnimesPage(results, false)
         }
-        return GET(url, globalHeaders)
+    }
+
+    private fun parseSearchDocument(document: Document, query: String, path: String): List<SAnime> {
+        val animeList = mutableListOf<SAnime>()
+        val isSeries = path.contains("Series", true) || path.contains("Serias", true) || path.contains("Anime", true)
+        
+        document.select("td.fb-n a, div.entry-content a, table tr a").forEach { link ->
+            var title = link.text().trim()
+            if (title.isBlank() || isIgnored(title) || title == "Parent Directory") return@forEach
+            if (title.endsWith("/")) title = title.removeSuffix("/")
+            
+            if (title.contains(query, ignoreCase = true)) {
+                val url = link.attr("abs:href")
+                if (url.contains("?") || url.endsWith("..")) return@forEach
+                
+                animeList.add(SAnime.create().apply {
+                    this.title = title
+                    this.url = fixUrl(url)
+                    this.status = if (isSeries) SAnime.ONGOING else SAnime.COMPLETED
+                    val finalUrl = if (this.url.endsWith("/")) this.url else "${this.url}/"
+                    this.thumbnail_url = fixUrl("${finalUrl}a11.jpg")
+                })
+            }
+        }
+        return animeList
+    }
+
+    override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request {
+        // Fallback for filter-based search (already handled by getSearchAnime if query exists)
+        return GET(Filters.getUrl(query, filters), globalHeaders)
     }
 
     override fun searchAnimeParse(response: Response): AnimesPage = popularAnimeParse(response)
