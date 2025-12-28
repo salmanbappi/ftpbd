@@ -56,23 +56,30 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         .addInterceptor { chain ->
             val request = chain.request()
             val url = request.url.toString()
-            val newRequest = request.newBuilder()
-                .apply {
-                    if (url.contains("tmdb.org")) {
-                        if (url.contains("api.themoviedb.org")) {
-                            addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1Y2Q0OWFlYWY5NDE2MWIxZTdiYWRiMjM4MjBmNmVhOSIsIm5iZiI6MTc1MTYzNTQzNS44NzM5OTk4LCJzdWIiOiI2ODY3ZDVlYmUzZDMxMmU1OGI2NzczNmYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.etziZE5AbWlUmsjFWwTWJ5C0GKYHqLb31kYzS6IwFXU")
-                        }
-                        addHeader("User-Agent", "Mozilla/5.0")
-                    } else if (url.contains("ftpbd.net")) {
-                        val cookie = cm.getCookiesHeaders()
-                        addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                        if (cookie.isNotBlank()) {
-                            addHeader("Cookie", cookie)
+            if (url.contains("tmdb.org") || url.contains("ftpbd.net")) {
+                val newRequest = request.newBuilder()
+                    .apply {
+                        if (url.contains("tmdb.org")) {
+                            if (url.contains("api.themoviedb.org")) {
+                                addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1Y2Q0OWFlYWY5NDE2MWIxZTdiYWRiMjM4MjBmNmVhOTIsIm5iZiI6MTc1MTYzNTQzNS44NzM5OTk4LCJzdWIiOiI2ODY3ZDVlYmUzZDMxMmU1OGI2NzczNmYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.etziZE5AbWlUmsjFWwTWJ5C0GKYHqLb31kYzS6IwFXU")
+                            }
+                            removeHeader("User-Agent")
+                            addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                        } else if (url.contains("ftpbd.net")) {
+                            val cookie = cm.getCookiesHeaders()
+                            removeHeader("User-Agent")
+                            addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                            if (cookie.isNotBlank()) {
+                                removeHeader("Cookie")
+                                addHeader("Cookie", cookie)
+                            }
                         }
                     }
-                }
-                .build()
-            chain.proceed(newRequest)
+                    .build()
+                chain.proceed(newRequest)
+            } else {
+                chain.proceed(request)
+            }
         }
         .build()
 
@@ -112,7 +119,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     private val tmdbHeaders by lazy {
         Headers.Builder()
             .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-            .add("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1Y2Q0OWFlYWY5NDE2MWIxZTdiYWRiMjM4MjBmNmVhOSIsIm5iZiI6MTc1MTYzNTQzNS44NzM5OTk4LCJzdWIiOiI2ODY3ZDVlYmUzZDMxMmU1OGI2NzczNmYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.etziZE5AbWlUmsjFWwTWJ5C0GKYHqLb31kYzS6IwFXU")
+            .add("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1Y2Q0OWFlYWY5NDE2MWIxZTdiYWRiMjM4MjBmNmVhOTIsIm5iZiI6MTc1MTYzNTQzNS44NzM5OTk4LCJzdWIiOiI2ODY3ZDVlYmUzZDMxMmU1OGI2NzczNmYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.etziZE5AbWlUmsjFWwTWJ5C0GKYHqLb31kYzS6IwFXU")
             .build()
     }
 
@@ -142,7 +149,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         get() = preferences.getString("tmdb_api_key", "")?.takeIf { it.isNotBlank() } ?: "5cd49aeaf94161b1e7badb23820f6ea9"
 
     // ============================== Popular ===============================
-    override fun popularAnimeRequest(page: Int): Request = GET("https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/", globalHeaders)
+    override fun popularAnimeRequest(page: Int): Request = GET("https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/")
 
     override fun popularAnimeParse(response: Response): AnimesPage {
         val document = response.asJsoup()
