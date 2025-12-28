@@ -415,7 +415,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             // Remove anything in parentheses
             .replace(Regex("\\([^)]*\\)"), "")
             // Remove anything in square brackets
-            .replace(Regex("[^\\]*\]"), "")
+            .replace(Regex("""\[[^\]]*\]"""), "")
             // Remove quality indicators
             .replace(Regex("(?i)(480p|720p|1080p|2160p|4k|uhd|hdr|web-?dl|blu-?ray|dvdrip|brrip|webrip).*?(?=\\s|$)"), "")
             // Remove episode/season markers
@@ -568,7 +568,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
         // 3. Fallback to title search
         val cleaned = cleanTitle(title)
-        val yearMatch = Regex("\\((\\d{4})\\)").find(title)
+        val yearMatch = Regex("""\((\d{4})\)""").find(title)
         val year = yearMatch?.groupValues?.get(1)
         
         // Try Movie search
