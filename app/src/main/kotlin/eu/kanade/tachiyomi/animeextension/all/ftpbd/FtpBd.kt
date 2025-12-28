@@ -24,6 +24,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.jsoup.nodes.Document
+import java.net.URLEncoder
+import kotlin.text.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -387,8 +389,8 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val yearMatch = Regex("\\((\\d{4})\\)").find(title)
         val year = yearMatch?.groupValues?.get(1)
         
-        var searchUrl = "https://api.themoviedb.org/3/search/multi?api_key=$key&query=${java.net.URLEncoder.encode(cleanTitle, "UTF-8")}"
-        if (year != null) searchUrl += "&primary_release_year=$year"
+        var searchUrl = "https://api.themoviedb.org/3/search/multi?api_key=$key&query=${URLEncoder.encode(cleanTitle, "UTF-8")}"
+        if (year != null) searchUrl += "&primary_release_year=${URLEncoder.encode(year, "UTF-8")}"
             
         return try {
             val response = client.newCall(GET(searchUrl, tmdbHeaders)).execute()
