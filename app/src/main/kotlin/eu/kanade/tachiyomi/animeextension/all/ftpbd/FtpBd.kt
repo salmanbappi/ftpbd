@@ -16,6 +16,9 @@ import eu.kanade.tachiyomi.network.awaitSuccess
 import extensions.utils.addEditTextPreference
 import extensions.utils.asJsoup
 import extensions.utils.getPreferencesLazy
+import extensions.utils.parseAs
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import okhttp3.Cookie
 import okhttp3.Headers
 import okhttp3.HttpUrl
@@ -30,6 +33,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import uy.kohesive.injekt.Injekt
@@ -148,8 +153,69 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     private val tmdbApiKey: String
         get() = preferences.getString("tmdb_api_key", "")?.takeIf { it.isNotBlank() } ?: "5cd49aeaf94161b1e7badb23820f6ea9"
 
+    @Serializable
+    data class TmdbData(
+        val id: Int? = null,
+        val title: String? = null,
+        val name: String? = null,
+        val overview: String? = null,
+        @SerialName("poster_path") val posterPath: String? = null,
+        @SerialName("vote_average") val voteAverage: Double? = null,
+        @SerialName("release_date") val releaseDate: String? = null,
+        @SerialName("first_air_date") val firstAirDate: String? = null
+    ) {
+        val displayTitle: String get() = title ?: name ?: ""
+    }
+
+    @Serializable
+    data class TmdbSearchResponse(
+        val results: List<TmdbData>
+    )
+
+    @Serializable
+    data class TmdbFindResponse(
+        @SerialName("movie_results") val movieResults: List<TmdbData>,
+        @SerialName("tv_results") val tvResults: List<TmdbData>
+    )
+
+    @Serializable
+    data class TmdbEpisodeData(
+        val name: String? = null,
+        val overview: String? = null,
+        @SerialName("episode_number") val episodeNumber: Int? = null,
+        @SerialName("still_path") val stillPath: String? = null,
+        @SerialName("vote_average") val voteAverage: Double? = null
+    )
+
+    @Serializable
+    data class TmdbSeasonData(
+        val episodes: List<TmdbEpisodeData>? = null
+    )
+
     // ============================== Popular ===============================
     override fun popularAnimeRequest(page: Int): Request = GET("https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/")
+
+    override suspend fun getPopularAnime(page: Int): AnimesPage {
+        val response = client.newCall(popularAnimeRequest(page)).awaitSuccess()
+        val pageResults = popularAnimeParse(response)
+        
+        return coroutineScope {
+            val updatedList = pageResults.anime.chunked(10).flatMap { chunk ->
+                chunk.map { anime ->
+                    async(Dispatchers.IO) {
+                        if (anime.thumbnail_url?.contains("a11.jpg") == true || anime.thumbnail_url?.isBlank() == true) {
+                            val betterThumb = getTmdbImageUrl(anime.title)
+                            if (betterThumb != null) {
+                                anime.thumbnail_url = betterThumb
+                            }
+                        }
+                        anime
+                    }
+                }.awaitAll()
+            }
+            AnimesPage(updatedList, pageResults.hasNextPage)
+        }
+    }
 
     override fun popularAnimeParse(response: Response): AnimesPage {
         val document = response.asJsoup()
@@ -163,11 +229,6 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 val link = element.selectFirst("h5 a, h2 a, h3 a, h4 a, .post-image a, .post-media a, a:has(img), .jws-post-image a") ?: return@forEach
                 val url = link.attr("abs:href")
                 
-                // Filter out non-movie results in search
-                if (isSearch && !url.contains("/movies/") && !url.contains("/series/") && !url.contains("/anime/") && !url.contains("ftpbd.net/FTP-")) {
-                   // Optional: check if title contains "Director" or other unwanted terms
-                }
-
                 var title = link.text().trim()
                 if (title.isBlank()) {
                     title = element.selectFirst("h5, h2, h3, h4, .post-title, .movie-title, .jws-post-title")?.text()?.trim() ?: ""
@@ -227,6 +288,29 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     // =============================== Latest ===============================
     override fun latestUpdatesRequest(page: Int): Request = popularAnimeRequest(page)
+    
+    override suspend fun getLatestUpdates(page: Int): AnimesPage {
+        val response = client.newCall(latestUpdatesRequest(page)).awaitSuccess()
+        val pageResults = latestUpdatesParse(response)
+        
+        return coroutineScope {
+            val updatedList = pageResults.anime.chunked(10).flatMap { chunk ->
+                chunk.map { anime ->
+                    async(Dispatchers.IO) {
+                        if (anime.thumbnail_url?.contains("a11.jpg") == true || anime.thumbnail_url?.isBlank() == true) {
+                            val betterThumb = getTmdbImageUrl(anime.title)
+                            if (betterThumb != null) {
+                                anime.thumbnail_url = betterThumb
+                            }
+                        }
+                        anime
+                    }
+                }.awaitAll()
+            }
+            AnimesPage(updatedList, pageResults.hasNextPage)
+        }
+    }
+
     override fun latestUpdatesParse(response: Response): AnimesPage = popularAnimeParse(response)
 
     // =============================== Search ===============================
@@ -260,14 +344,14 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             )
 
             val semaphore = Semaphore(20)
-            val results = searchPaths.map { path ->
+            val results = searchPaths.map {
                 async(Dispatchers.IO) {
                     semaphore.withPermit {
                         try {
-                            val response = client.newCall(GET(path, getGlobalHeaders())).execute()
+                            val response = client.newCall(GET(it, getGlobalHeaders())).execute()
                             if (!response.isSuccessful) return@withPermit emptyList<SAnime>()
                             val doc = response.asJsoup()
-                            parseSearchDocument(doc, query, path)
+                            parseSearchDocument(doc, query, it)
                         } catch (e: Exception) {
                             emptyList<SAnime>()
                         }
@@ -275,7 +359,21 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 }
             }.awaitAll().flatten().distinctBy { it.url }
 
-            AnimesPage(sortByTitle(results, query), false)
+            val finalResults = results.chunked(10).flatMap {
+                it.map {
+                    async(Dispatchers.IO) {
+                        if (it.thumbnail_url?.contains("a11.jpg") == true) {
+                            val betterThumb = getTmdbImageUrl(it.title)
+                            if (betterThumb != null) {
+                                it.thumbnail_url = betterThumb
+                            }
+                        }
+                        it
+                    }
+                }.awaitAll()
+            }
+
+            AnimesPage(sortByTitle(finalResults, query), false)
         }
     }
 
@@ -309,6 +407,50 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     private fun sortByTitle(list: List<SAnime>, query: String): List<SAnime> {
         return list.sortedByDescending { diceCoefficient(it.title, query) }
+    }
+
+    private fun cleanTitle(name: String): String {
+        return name
+            // Remove anything in parentheses
+            .replace(Regex("\\([^)]*\\)"), "")
+            // Remove anything in square brackets
+            .replace(Regex("\[[^\]]*\]"), "")
+            // Remove quality indicators
+            .replace(Regex("(?i)(480p|720p|1080p|2160p|4k|uhd|hdr|web-?dl|blu-?ray|dvdrip|brrip|webrip).*?(?=\\s|$)"), "")
+            // Remove episode/season markers
+            .replace(Regex("(?i)(s\\d{1,2}e\\d{1,2}|season\\s*\\d+|episode\\s*\\d+).*?(?=\\s|$)"), "")
+            // Remove status indicators
+            .replace(Regex("(?i)(complete|completed|ongoing|batch|repack|dual.audio|multi.sub|subtitle).*?(?=\\s|$)"), "")
+            // Remove file extensions
+            .replace(Regex("\\.(?:mp4|mkv|avi|mov|wmv)$"), "")
+            // Remove multiple spaces and trim
+            .replace(Regex("\\s+"), " ")
+            .trim()
+    }
+
+    private fun calculateSimilarity(s1: String, s2: String): Double {
+        val shorter = if (s1.length < s2.length) s1.lowercase() else s2.lowercase()
+        val longer = if (s1.length < s2.length) s2.lowercase() else s1.lowercase()
+        
+        if (shorter.length < 2) return if (longer.contains(shorter)) 0.5 else 0.0
+        
+        // If the longer string contains the shorter one entirely
+        if (longer.contains(shorter)) return 1.0
+        
+        // Count matching words
+        val words1 = s1.lowercase().split(" ").filter { it.length > 2 }
+        val words2 = s2.lowercase().split(" ").filter { it.length > 2 }
+        
+        if (words1.isEmpty() || words2.isEmpty()) return 0.0
+        
+        var matches = 0
+        for (word in words1) {
+            if (words2.any { it.contains(word) || word.contains(it) }) {
+                matches++
+            }
+        }
+        
+        return matches.toDouble() / maxOf(words1.size, words2.size)
     }
 
     private fun diceCoefficient(s1: String, s2: String): Double {
@@ -350,9 +492,11 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                        thumbnail_url = getBetterImageUrl(thumb ?: "")
                    }
         
-        val tmdbImg = getTmdbImageUrl(anime.title, document)
-        if (tmdbImg != null) {
-            anime.thumbnail_url = tmdbImg
+        val tmdbData = runBlocking { getTmdbData(anime.title, document) }
+        if (tmdbData != null) {
+            tmdbData.posterPath?.let { anime.thumbnail_url = "https://image.tmdb.org/t/p/w500$it" }
+            tmdbData.overview?.let { if (anime.description.isNullOrBlank()) anime.description = it }
+            tmdbData.voteAverage?.let { anime.status = if (it > 0) SAnime.COMPLETED else SAnime.UNKNOWN }
         }
         
         return anime
@@ -384,52 +528,86 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     private fun getTmdbImageUrl(title: String, document: Document? = null): String? {
+        return runBlocking { getTmdbData(title, document)?.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" } }
+    }
+
+    private suspend fun getTmdbData(title: String, document: Document? = null): TmdbData? {
         val key = tmdbApiKey
         if (key.isBlank()) return null
         
         if (document != null) {
             val html = document.html()
             
-            // 1. Try TMDb ID
-            val tmdbIdMatch = Regex("""themoviedb\.org/(movie|tv)/(\d+)""").find(html)
+            // 1. Try TMDb ID from HTML
+            val tmdbIdMatch = Regex("""themoviedb\\.org/(movie|tv)/(\\d+)""" ).find(html)
             if (tmdbIdMatch != null) {
                 val type = tmdbIdMatch.groupValues[1]
                 val id = tmdbIdMatch.groupValues[2]
                 try {
+                    delay(250)
                     val res = client.newCall(GET("https://api.themoviedb.org/3/$type/$id", tmdbHeaders)).execute()
-                    val poster = Regex("""poster_path":"([^"]+)"""").find(res.body?.string() ?: "")?.groupValues?.get(1)
-                    if (poster != null) return "https://image.tmdb.org/t/p/w500$poster"
+                    if (res.isSuccessful) return res.parseAs<TmdbData>()
                 } catch (e: Exception) {}
             }
 
-            // 2. Try IMDb ID
-            val imdbIdMatch = Regex("""imdb\.com/title/(tt\d+)""").find(html) ?: Regex("""(tt\d{7,9})""").find(html)
+            // 2. Try IMDb ID from HTML
+            val imdbIdMatch = Regex("""imdb\\.com/title/(tt\\d+)""" ).find(html) ?: Regex("""(tt\\d{7,9})""" ).find(html)
             if (imdbIdMatch != null) {
                 val imdbId = imdbIdMatch.groupValues[1]
                 try {
+                    delay(250)
                     val res = client.newCall(GET("https://api.themoviedb.org/3/find/$imdbId?external_source=imdb_id", tmdbHeaders)).execute()
-                    val poster = Regex("""poster_path":"([^"]+)"""").find(res.body?.string() ?: "")?.groupValues?.get(1)
-                    if (poster != null) return "https://image.tmdb.org/t/p/w500$poster"
+                    if (res.isSuccessful) {
+                        val findRes = res.parseAs<TmdbFindResponse>()
+                        return findRes.movieResults.firstOrNull() ?: findRes.tvResults.firstOrNull()
+                    }
                 } catch (e: Exception) {}
             }
         }
 
         // 3. Fallback to title search
-        val cleanTitle = title.replace(Regex("\\(\\d{4}\\)"), "").trim()
+        val cleaned = cleanTitle(title)
         val yearMatch = Regex("\\((\\d{4})\\)").find(title)
         val year = yearMatch?.groupValues?.get(1)
         
-        var searchUrl = "https://api.themoviedb.org/3/search/multi?query=${URLEncoder.encode(cleanTitle, "UTF-8")}"
-        if (year != null) searchUrl += "&primary_release_year=${URLEncoder.encode(year, "UTF-8")}"
-            
-        return try {
-            val response = client.newCall(GET(searchUrl, tmdbHeaders)).execute()
-            val json = response.body?.string() ?: ""
-            val regex = """poster_path":"([^"]+)"""".toRegex()
-            regex.find(json)?.groupValues?.get(1)?.let { "https://image.tmdb.org/t/p/w500$it" }
-        } catch (e: Exception) {
-            null
-        }
+        // Try Movie search
+        var movieUrl = "https://api.themoviedb.org/3/search/movie?query=${URLEncoder.encode(cleaned, "UTF-8")}"
+        if (year != null) movieUrl += "&primary_release_year=$year"
+        
+        try {
+            delay(250)
+            val res = client.newCall(GET(movieUrl, tmdbHeaders)).execute()
+            if (res.isSuccessful) {
+                val searchRes = res.parseAs<TmdbSearchResponse>()
+                val best = pickBestTmdbResult(searchRes.results, cleaned)
+                if (best != null) return best
+            }
+        } catch (e: Exception) {}
+
+        // Try TV search
+        var tvUrl = "https://api.themoviedb.org/3/search/tv?query=${URLEncoder.encode(cleaned, "UTF-8")}"
+        if (year != null) tvUrl += "&first_air_date_year=$year"
+        
+        try {
+            delay(250)
+            val res = client.newCall(GET(tvUrl, tmdbHeaders)).execute()
+            if (res.isSuccessful) {
+                val searchRes = res.parseAs<TmdbSearchResponse>()
+                val best = pickBestTmdbResult(searchRes.results, cleaned)
+                if (best != null) return best
+            }
+        } catch (e: Exception) {}
+
+        return null
+    }
+
+    private fun pickBestTmdbResult(results: List<TmdbData>, query: String): TmdbData? {
+        return results.map {
+            val similarity = calculateSimilarity(query, it.displayTitle)
+            Pair(it, similarity)
+        }.filter { it.second > 0.5 }
+         .maxByOrNull { it.second }
+         ?.first
     }
 
     // ============================== Episodes ==============================
@@ -438,13 +616,79 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val document = response.asJsoup()
         val mediaType = getMediaType(document)
         
-        return when (mediaType) {
+        val tmdbData = getTmdbData(anime.title, document)
+        
+        val episodes = when (mediaType) {
             "s" -> {
                 val list = extractEpisode(document)
                 if (list.isEmpty()) getDirectoryEpisodes(document) else list.reversed()
             }
             "m" -> getMovieMedia(document)
             else -> getDirectoryEpisodes(document)
+        }
+
+        if (tmdbData != null && tmdbData.id != null) {
+            return mapTmdbEpisodes(episodes, tmdbData.id)
+        }
+        
+        return episodes
+    }
+
+    private suspend fun mapTmdbEpisodes(episodes: List<SEpisode>, tmdbId: Int): List<SEpisode> {
+        val seasonMap = mutableMapOf<Int, TmdbSeasonData?>()
+        
+        return coroutineScope {
+            episodes.map {
+                async(Dispatchers.IO) {
+                    val sEp = parseSeasonEpisode(it.name)
+                    if (sEp != null) {
+                        val seasonNum = sEp.first
+                        val episodeNum = sEp.second
+                        
+                        val seasonData = synchronized(seasonMap) {
+                            seasonMap.getOrPut(seasonNum) {
+                                fetchTmdbSeason(tmdbId, seasonNum)
+                            }
+                        }
+                        
+                        val tmdbEp = seasonData?.episodes?.find { it.episodeNumber == episodeNum }
+                        if (tmdbEp != null) {
+                            it.name = "S${seasonNum}E${episodeNum} - ${tmdbEp.name}"
+                            if (it.scanlator.isNullOrBlank()) {
+                                it.scanlator = tmdbEp.voteAverage?.toString()
+                            }
+                        }
+                    }
+                    it
+                }
+            }.awaitAll()
+        }
+    }
+
+    private fun parseSeasonEpisode(name: String): Pair<Int, Int>? {
+        val pattern = Regex("(?i)S(\\d{1,2})\\s*E(\\d{1,3})")
+        val match = pattern.find(name)
+        if (match != null) {
+            return Pair(match.groupValues[1].toInt(), match.groupValues[2].toInt())
+        }
+        
+        val pattern2 = Regex("(?i)Season\\s*(\\d+).*?Episode\\s*(\\d+)", RegexOption.IGNORE_CASE)
+        val match2 = pattern2.find(name)
+        if (match2 != null) {
+            return Pair(match2.groupValues[1].toInt(), match2.groupValues[2].toInt())
+        }
+        
+        return null
+    }
+
+    private suspend fun fetchTmdbSeason(tmdbId: Int, seasonNum: Int): TmdbSeasonData? {
+        val url = "https://api.themoviedb.org/3/tv/$tmdbId/season/$seasonNum"
+        return try {
+            delay(250)
+            val res = client.newCall(GET(url, tmdbHeaders)).execute()
+            if (res.isSuccessful) res.parseAs<TmdbSeasonData>() else null
+        } catch (e: Exception) {
+            null
         }
     }
 
