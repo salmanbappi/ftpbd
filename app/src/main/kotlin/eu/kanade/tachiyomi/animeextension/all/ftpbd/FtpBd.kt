@@ -35,7 +35,9 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -200,19 +202,17 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val pageResults = popularAnimeParse(response)
         
         return coroutineScope {
-            val updatedList = pageResults.anime.chunked(10).flatMap { chunk ->
-                chunk.map { anime ->
-                    async(Dispatchers.IO) {
-                        if (anime.thumbnail_url?.contains("a11.jpg") == true || anime.thumbnail_url?.isBlank() == true) {
-                            val betterThumb = getTmdbImageUrl(anime.title)
-                            if (betterThumb != null) {
-                                anime.thumbnail_url = betterThumb
-                            }
+            val updatedList = pageResults.anime.map { anime ->
+                async(Dispatchers.IO) {
+                    if (anime.thumbnail_url?.contains("a11.jpg") == true || anime.thumbnail_url?.isBlank() == true) {
+                        val betterThumb = getTmdbImageUrl(anime.title)
+                        if (betterThumb != null) {
+                            anime.thumbnail_url = betterThumb
                         }
-                        anime
                     }
-                }.awaitAll()
-            }
+                    anime
+                }
+            }.awaitAll()
             AnimesPage(updatedList, pageResults.hasNextPage)
         }
     }
@@ -294,19 +294,17 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val pageResults = latestUpdatesParse(response)
         
         return coroutineScope {
-            val updatedList = pageResults.anime.chunked(10).flatMap { chunk ->
-                chunk.map { anime ->
-                    async(Dispatchers.IO) {
-                        if (anime.thumbnail_url?.contains("a11.jpg") == true || anime.thumbnail_url?.isBlank() == true) {
-                            val betterThumb = getTmdbImageUrl(anime.title)
-                            if (betterThumb != null) {
-                                anime.thumbnail_url = betterThumb
-                            }
+            val updatedList = pageResults.anime.map { anime ->
+                async(Dispatchers.IO) {
+                    if (anime.thumbnail_url?.contains("a11.jpg") == true || anime.thumbnail_url?.isBlank() == true) {
+                        val betterThumb = getTmdbImageUrl(anime.title)
+                        if (betterThumb != null) {
+                            anime.thumbnail_url = betterThumb
                         }
-                        anime
                     }
-                }.awaitAll()
-            }
+                    anime
+                }
+            }.awaitAll()
             AnimesPage(updatedList, pageResults.hasNextPage)
         }
     }
@@ -359,19 +357,17 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 }
             }.awaitAll().flatten().distinctBy { it.url }
 
-            val finalResults = results.chunked(10).flatMap {
-                it.map {
-                    async(Dispatchers.IO) {
-                        if (it.thumbnail_url?.contains("a11.jpg") == true) {
-                            val betterThumb = getTmdbImageUrl(it.title)
-                            if (betterThumb != null) {
-                                it.thumbnail_url = betterThumb
-                            }
+            val finalResults = results.map { anime ->
+                async(Dispatchers.IO) {
+                    if (anime.thumbnail_url?.contains("a11.jpg") == true) {
+                        val betterThumb = getTmdbImageUrl(anime.title)
+                        if (betterThumb != null) {
+                            anime.thumbnail_url = betterThumb
                         }
-                        it
                     }
-                }.awaitAll()
-            }
+                    anime
+                }
+            }.awaitAll()
 
             AnimesPage(sortByTitle(finalResults, query), false)
         }
@@ -414,7 +410,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             // Remove anything in parentheses
             .replace(Regex("\\([^)]*\\)"), "")
             // Remove anything in square brackets
-            .replace(Regex("\[[^\]]*\]"), "")
+            .replace(Regex("\\[[^\\]]*\\]"), "")
             // Remove quality indicators
             .replace(Regex("(?i)(480p|720p|1080p|2160p|4k|uhd|hdr|web-?dl|blu-?ray|dvdrip|brrip|webrip).*?(?=\\s|$)"), "")
             // Remove episode/season markers
@@ -634,18 +630,19 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         return episodes
     }
 
+    private val seasonMap = mutableMapOf<Int, TmdbSeasonData?>()
+    private val seasonMutex = Mutex()
+
     private suspend fun mapTmdbEpisodes(episodes: List<SEpisode>, tmdbId: Int): List<SEpisode> {
-        val seasonMap = mutableMapOf<Int, TmdbSeasonData?>()
-        
         return coroutineScope {
-            episodes.map {
+            episodes.map { episode ->
                 async(Dispatchers.IO) {
-                    val sEp = parseSeasonEpisode(it.name)
+                    val sEp = parseSeasonEpisode(episode.name)
                     if (sEp != null) {
                         val seasonNum = sEp.first
                         val episodeNum = sEp.second
                         
-                        val seasonData = synchronized(seasonMap) {
+                        val seasonData = seasonMutex.withLock {
                             seasonMap.getOrPut(seasonNum) {
                                 fetchTmdbSeason(tmdbId, seasonNum)
                             }
@@ -653,13 +650,13 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                         
                         val tmdbEp = seasonData?.episodes?.find { it.episodeNumber == episodeNum }
                         if (tmdbEp != null) {
-                            it.name = "S${seasonNum}E${episodeNum} - ${tmdbEp.name}"
-                            if (it.scanlator.isNullOrBlank()) {
-                                it.scanlator = tmdbEp.voteAverage?.toString()
+                            episode.name = "S${seasonNum}E${episodeNum} - ${tmdbEp.name}"
+                            if (episode.scanlator.isNullOrBlank()) {
+                                episode.scanlator = tmdbEp.voteAverage?.toString()
                             }
                         }
                     }
-                    it
+                    episode
                 }
             }.awaitAll()
         }
