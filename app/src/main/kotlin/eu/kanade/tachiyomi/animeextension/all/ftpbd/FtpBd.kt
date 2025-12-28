@@ -133,7 +133,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     private fun getBetterImageUrl(url: String): String {
         if (url.isBlank()) return ""
         if (url.contains("ftpbd.net/wp-content/uploads/")) {
-            // Extract TMDb hash: /uploads/2025/10/pyznPP82WBdWOYvKHbQq9bDv4Ng-288x400.jpg
+            // Extract TMDb hash
             val filename = url.substringAfterLast("/")
             val hash = filename.substringBefore("-").substringBefore(".")
             if (hash.length >= 20) {
@@ -200,17 +200,19 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     override suspend fun getPopularAnime(page: Int): AnimesPage {
         val response = client.newCall(popularAnimeRequest(page)).awaitSuccess()
         val pageResults = popularAnimeParse(response)
+        val animeList = pageResults.anime
         
         return coroutineScope {
-            val updatedList = pageResults.anime.map { anime ->
+            val updatedList = animeList.map { sAnime ->
                 async(Dispatchers.IO) {
-                    if (anime.thumbnail_url?.contains("a11.jpg") == true || anime.thumbnail_url?.isBlank() == true) {
-                        val betterThumb = getTmdbImageUrl(anime.title)
+                    val thumb = sAnime.thumbnail_url
+                    if (thumb == null || thumb.isBlank() || thumb.contains("a11.jpg")) {
+                        val betterThumb = getTmdbImageUrl(sAnime.title)
                         if (betterThumb != null) {
-                            anime.thumbnail_url = betterThumb
+                            sAnime.thumbnail_url = betterThumb
                         }
                     }
-                    anime
+                    sAnime
                 }
             }.awaitAll()
             AnimesPage(updatedList, pageResults.hasNextPage)
@@ -292,17 +294,19 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     override suspend fun getLatestUpdates(page: Int): AnimesPage {
         val response = client.newCall(latestUpdatesRequest(page)).awaitSuccess()
         val pageResults = latestUpdatesParse(response)
+        val animeList = pageResults.anime
         
         return coroutineScope {
-            val updatedList = pageResults.anime.map { anime ->
+            val updatedList = animeList.map { sAnime ->
                 async(Dispatchers.IO) {
-                    if (anime.thumbnail_url?.contains("a11.jpg") == true || anime.thumbnail_url?.isBlank() == true) {
-                        val betterThumb = getTmdbImageUrl(anime.title)
+                    val thumb = sAnime.thumbnail_url
+                    if (thumb == null || thumb.isBlank() || thumb.contains("a11.jpg")) {
+                        val betterThumb = getTmdbImageUrl(sAnime.title)
                         if (betterThumb != null) {
-                            anime.thumbnail_url = betterThumb
+                            sAnime.thumbnail_url = betterThumb
                         }
                     }
-                    anime
+                    sAnime
                 }
             }.awaitAll()
             AnimesPage(updatedList, pageResults.hasNextPage)
@@ -342,14 +346,14 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             )
 
             val semaphore = Semaphore(20)
-            val results = searchPaths.map {
+            val results = searchPaths.map { path ->
                 async(Dispatchers.IO) {
                     semaphore.withPermit {
                         try {
-                            val response = client.newCall(GET(it, getGlobalHeaders())).execute()
+                            val response = client.newCall(GET(path, getGlobalHeaders())).execute()
                             if (!response.isSuccessful) return@withPermit emptyList<SAnime>()
                             val doc = response.asJsoup()
-                            parseSearchDocument(doc, query, it)
+                            parseSearchDocument(doc, query, path)
                         } catch (e: Exception) {
                             emptyList<SAnime>()
                         }
@@ -357,15 +361,15 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 }
             }.awaitAll().flatten().distinctBy { it.url }
 
-            val finalResults = results.map { anime ->
+            val finalResults = results.map { sAnime ->
                 async(Dispatchers.IO) {
-                    if (anime.thumbnail_url?.contains("a11.jpg") == true) {
-                        val betterThumb = getTmdbImageUrl(anime.title)
+                    if (sAnime.thumbnail_url?.contains("a11.jpg") == true) {
+                        val betterThumb = getTmdbImageUrl(sAnime.title)
                         if (betterThumb != null) {
-                            anime.thumbnail_url = betterThumb
+                            sAnime.thumbnail_url = betterThumb
                         }
                     }
-                    anime
+                    sAnime
                 }
             }.awaitAll()
 
@@ -410,7 +414,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             // Remove anything in parentheses
             .replace(Regex("\\([^)]*\\)"), "")
             // Remove anything in square brackets
-            .replace(Regex("\\[[^\\]]*\\]"), "")
+            .replace(Regex("\[[^\]]*\]"), "")
             // Remove quality indicators
             .replace(Regex("(?i)(480p|720p|1080p|2160p|4k|uhd|hdr|web-?dl|blu-?ray|dvdrip|brrip|webrip).*?(?=\\s|$)"), "")
             // Remove episode/season markers
@@ -547,7 +551,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             }
 
             // 2. Try IMDb ID from HTML
-            val imdbIdMatch = Regex("""imdb\\.com/title/(tt\\d+)""" ).find(html) ?: Regex("""(tt\\d{7,9})""" ).find(html)
+            val imdbIdMatch = Regex("""imdb\\.com/title/(tt\\d+)""" ).find(html) ?: Regex("(tt\\d{7,9})" ).find(html)
             if (imdbIdMatch != null) {
                 val imdbId = imdbIdMatch.groupValues[1]
                 try {
@@ -643,8 +647,10 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                         val episodeNum = sEp.second
                         
                         val seasonData = seasonMutex.withLock {
-                            seasonMap.getOrPut(seasonNum) {
-                                fetchTmdbSeason(tmdbId, seasonNum)
+                            seasonMap[seasonNum]
+                        } ?: fetchTmdbSeason(tmdbId, seasonNum).also {
+                            seasonMutex.withLock {
+                                seasonMap[seasonNum] = it
                             }
                         }
                         
@@ -746,12 +752,12 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val currentUrl = document.location()
         if (!visited.add(currentUrl)) return
 
-        document.select("a[href]").forEach { link ->
-            val href = link.attr("abs:href").ifBlank {
-                val r = link.attr("href")
+        document.select("a[href]").forEach {
+            val href = it.attr("abs:href").ifBlank {
+                val r = it.attr("href")
                 if (r.startsWith("http")) r else currentUrl.removeSuffix("/") + "/" + r.removePrefix("/")
             }
-            val text = link.text().trim()
+            val text = it.text().trim()
             if (isIgnored(text) || href.contains("?")) return@forEach
             
             val lowerHref = href.toLowerCase()
