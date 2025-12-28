@@ -50,7 +50,31 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     private val preferences: SharedPreferences by getPreferencesLazy()
 
-    private val cm by lazy { CookieManager(client) }
+    private val cm by lazy { CookieManager(network.client) }
+
+    override val client: OkHttpClient = network.client.newBuilder()
+        .addInterceptor { chain ->
+            val request = chain.request()
+            val url = request.url.toString()
+            val newRequest = request.newBuilder()
+                .apply {
+                    if (url.contains("tmdb.org")) {
+                        if (url.contains("api.themoviedb.org")) {
+                            addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1Y2Q0OWFlYWY5NDE2MWIxZTdiYWRiMjM4MjBmNmVhOSIsIm5iZiI6MTc1MTYzNTQzNS44NzM5OTk4LCJzdWIiOiI2ODY3ZDVlYmUzZDMxMmU1OGI2NzczNmYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.etziZE5AbWlUmsjFWwTWJ5C0GKYHqLb31kYzS6IwFXU")
+                        }
+                        addHeader("User-Agent", "Mozilla/5.0")
+                    } else if (url.contains("ftpbd.net")) {
+                        val cookie = cm.getCookiesHeaders()
+                        addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                        if (cookie.isNotBlank()) {
+                            addHeader("Cookie", cookie)
+                        }
+                    }
+                }
+                .build()
+            chain.proceed(newRequest)
+        }
+        .build()
 
     private fun fixUrl(url: String): String {
         if (url.isBlank()) return url
@@ -72,16 +96,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     override fun animeDetailsRequest(anime: SAnime): Request {
-        return GET(fixUrl(anime.url), globalHeaders)
-    }
-
-    override fun imageRequest(anime: SAnime): Request {
-        val url = fixUrl(anime.thumbnail_url ?: "")
-        return if (url.contains("tmdb.org")) {
-            GET(url, Headers.Builder().add("User-Agent", "Mozilla/5.0").build())
-        } else {
-            GET(url, globalHeaders)
-        }
+        return GET(fixUrl(anime.url))
     }
 
     private val globalHeaders by lazy {
