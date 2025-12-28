@@ -180,11 +180,14 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     override suspend fun getSearchAnime(page: Int, query: String, filters: AnimeFilterList): AnimesPage {
         if (query.isBlank()) return super.getSearchAnime(page, query, filters)
 
-        return kotlinx.coroutines.coroutineScope {
+        return coroutineScope {
             val searchPaths = listOf(
                 "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2025/",
                 "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2024/",
                 "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2023/",
+                "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2022/",
+                "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2021/",
+                "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/2020/",
                 "https://server3.ftpbd.net/FTP-3/Hindi%20Movies/Hindi-4K-Movies/",
                 "https://server3.ftpbd.net/FTP-3/Hindi%20TV%20Series/",
                 "https://server3.ftpbd.net/FTP-3/South%20Indian%20Movies/2025/",
@@ -193,10 +196,17 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 "https://server3.ftpbd.net/FTP-3/Foreign%20Language%20Movies/2025/",
                 "https://server3.ftpbd.net/FTP-3/Foreign%20Language%20Movies/2024/",
                 "https://server3.ftpbd.net/FTP-3/Bangla%20Collection/BANGLA/",
-                "https://server3.ftpbd.net/FTP-3/%5BToday%27s%20Upload%5D/"
+                "https://server2.ftpbd.net/FTP-2/English%20Movies/2025/",
+                "https://server2.ftpbd.net/FTP-2/English%20Movies/2024/",
+                "https://server2.ftpbd.net/FTP-2/English%20Movies/2023/",
+                "https://server2.ftpbd.net/FTP-2/English%20Movies/2022/",
+                "https://server2.ftpbd.net/FTP-2/English%20Movies/English-Movies-4K/",
+                "https://server4.ftpbd.net/FTP-4/English-Foreign-TV-Series/",
+                "https://server5.ftpbd.net/FTP-5/Anime--Cartoon-TV-Series/",
+                "https://server5.ftpbd.net/FTP-5/Animation%20Movies/"
             )
 
-            val semaphore = kotlinx.coroutines.sync.Semaphore(15)
+            val semaphore = Semaphore(20)
             val results = searchPaths.map { path ->
                 async(Dispatchers.IO) {
                     semaphore.withPermit {
@@ -212,20 +222,23 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 }
             }.awaitAll().flatten().distinctBy { it.url }
 
-            AnimesPage(results, false)
+            AnimesPage(sortByTitle(results, query), false)
         }
     }
 
     private fun parseSearchDocument(document: Document, query: String, path: String): List<SAnime> {
         val animeList = mutableListOf<SAnime>()
         val isSeries = path.contains("Series", true) || path.contains("Serias", true) || path.contains("Anime", true)
+        val normalizedQuery = query.lowercase()
         
         document.select("td.fb-n a, div.entry-content a, table tr a").forEach { link ->
             var title = link.text().trim()
             if (title.isBlank() || isIgnored(title) || title == "Parent Directory") return@forEach
             if (title.endsWith("/")) title = title.removeSuffix("/")
             
-            if (title.contains(query, ignoreCase = true)) {
+            // Dice coefficient check for fuzzy matching
+            val score = diceCoefficient(title, normalizedQuery)
+            if (score > 0.3 || title.lowercase().contains(normalizedQuery)) {
                 val url = link.attr("abs:href")
                 if (url.contains("?") || url.endsWith("..")) return@forEach
                 
@@ -241,8 +254,27 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         return animeList
     }
 
+    private fun sortByTitle(list: List<SAnime>, query: String): List<SAnime> {
+        return list.sortedByDescending { diceCoefficient(it.title, query) }
+    }
+
+    private fun diceCoefficient(s1: String, s2: String): Double {
+        val str1 = s1.lowercase()
+        val str2 = s2.lowercase()
+        if (str1.length < 2 || str2.length < 2) return if (str1.contains(str2) || str2.contains(str1)) 0.5 else 0.0
+        
+        val pairs1 = (0 until str1.length - 1).map { str1.substring(it, it + 2) }.toSet()
+        val pairs2 = (0 until str2.length - 1).map { str2.substring(it, it + 2) }
+        
+        var intersection = 0
+        for (pair in pairs2) {
+            if (pair in pairs1) intersection++
+        }
+        
+        return 2.0 * intersection / (pairs1.size + pairs2.size)
+    }
+
     override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request {
-        // Fallback for filter-based search (already handled by getSearchAnime if query exists)
         return GET(Filters.getUrl(query, filters), globalHeaders)
     }
 
