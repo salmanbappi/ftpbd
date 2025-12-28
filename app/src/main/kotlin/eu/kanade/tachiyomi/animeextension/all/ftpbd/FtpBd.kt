@@ -289,7 +289,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                    else if (mediaType == "s") getSeriesDetails(document)
                    else SAnime.create().apply {
                        status = SAnime.COMPLETED
-                       val img = document.selectFirst("img[src~=(?i)a11|a_al|poster|banner|thumb], img:not([src~=(?i)back|folder|parent|icon|/icons/])")
+                       val img = document.selectFirst("div.jws-images img, img[src~=(?i)a11|a_al|poster|banner|thumb], img:not([src~=(?i)back|folder|parent|icon|/icons/])")
                        var thumb = img?.attr("abs:src")
                        if (thumb.isNullOrBlank()) {
                            thumb = document.selectFirst("a[href~=(?i)\\.(jpg|jpeg|png|webp)]:not([href~=(?i)back|folder|parent|icon])")?.attr("abs:href")
@@ -316,7 +316,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     private fun getMovieDetails(document: Document) = SAnime.create().apply {
         status = SAnime.COMPLETED
-        thumbnail_url = fixUrl(document.select("figure.movie-detail-banner img, .movie-detail-banner img, .col-md-3 img, .poster img")
+        thumbnail_url = fixUrl(document.select("div.jws-images img, figure.movie-detail-banner img, .movie-detail-banner img, .col-md-3 img, .poster img")
             .attr("abs:src"))
         genre = document.select("div.ganre-wrapper a").joinToString { it.text().replace(",", "").trim() }
         description = document.select("p.storyline").text().trim()
@@ -324,7 +324,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     private fun getSeriesDetails(document: Document) = SAnime.create().apply {
         status = SAnime.ONGOING
-        thumbnail_url = fixUrl(document.select("figure.movie-detail-banner img, .movie-detail-banner img, .col-md-3 img, .poster img")
+        thumbnail_url = fixUrl(document.select("div.jws-images img, figure.movie-detail-banner img, .movie-detail-banner img, .col-md-3 img, .poster img")
             .attr("abs:src"))
         genre = document.select("div.ganre-wrapper a").joinToString { it.text().replace(",", "").trim() }
         description = document.select("p.storyline").text().trim()
