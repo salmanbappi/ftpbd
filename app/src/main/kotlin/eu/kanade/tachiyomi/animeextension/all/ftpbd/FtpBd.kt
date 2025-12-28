@@ -297,7 +297,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                        thumbnail_url = fixUrl(thumb ?: "")
                    }
         
-        val tmdbImg = getTmdbImageUrl(anime.title)
+        val tmdbImg = getTmdbImageUrl(anime.title, document)
         if (tmdbImg != null) {
             anime.thumbnail_url = tmdbImg
         }
@@ -330,15 +330,47 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         description = document.select("p.storyline").text().trim()
     }
 
-    private fun getTmdbImageUrl(title: String): String? {
+    private fun getTmdbImageUrl(title: String, document: Document? = null): String? {
         val key = tmdbApiKey
         if (key.isBlank()) return null
         
-        val cleanTitle = title.replace(Regex("\\(\\d{4}\\)"), "").trim()
-        val url = "https://api.themoviedb.org/3/search/multi?api_key=$key&query=".plus(java.net.URLEncoder.encode(cleanTitle, "UTF-8"))
         val tmdbHeaders = Headers.Builder()
             .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
             .build()
+
+        if (document != null) {
+            val html = document.html()
+            
+            // 1. Try TMDb ID
+            val tmdbIdMatch = Regex("""themoviedb\.org/(movie|tv)/(\d+)""").find(html)
+            if (tmdbIdMatch != null) {
+                val type = tmdbIdMatch.groupValues[1]
+                val id = tmdbIdMatch.groupValues[2]
+                try {
+                    val res = client.newCall(GET("https://api.themoviedb.org/3/$type/$id?api_key=$key", tmdbHeaders)).execute()
+                    val poster = Regex("""poster_path":"([^"]+)"""").find(res.body?.string() ?: "")?.groupValues?.get(1)
+                    if (poster != null) return "https://image.tmdb.org/t/p/w500$poster"
+                } catch (e: Exception) {}
+            }
+
+            // 2. Try IMDb ID
+            val imdbIdMatch = Regex("""imdb\.com/title/(tt\d+)""").find(html) ?: Regex("""(tt\d{7,9})""").find(html)
+            if (imdbIdMatch != null) {
+                val imdbId = imdbIdMatch.groupValues[1]
+                try {
+                    val res = client.newCall(GET("https://api.themoviedb.org/3/find/$imdbId?api_key=$key&external_source=imdb_id", tmdbHeaders)).execute()
+                    val poster = Regex("""poster_path":"([^"]+)"""").find(res.body?.string() ?: "")?.groupValues?.get(1)
+                    if (poster != null) return "https://image.tmdb.org/t/p/w500$poster"
+                } catch (e: Exception) {}
+            }
+        }
+
+        // 3. Fallback to title search
+        val cleanTitle = title.replace(Regex("\\(\\d{4}\\)"), "").trim()
+        val yearMatch = Regex("\\((\\d{4})\\)").find(title)
+        val query = if (yearMatch != null) "$cleanTitle (${yearMatch.groupValues[1]})" else cleanTitle
+        
+        val url = "https://api.themoviedb.org/3/search/multi?api_key=$key&query=${java.net.URLEncoder.encode(query, "UTF-8")}"
             
         return try {
             val response = client.newCall(GET(url, tmdbHeaders)).execute()
