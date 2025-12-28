@@ -44,6 +44,29 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     private val cm by lazy { CookieManager(client) }
 
+    private fun fixUrl(url: String): String {
+        if (url.isBlank()) return url
+        var u = url.trim()
+        
+        // Handle baseUrl + absoluteUrl concatenation: https://ftpbd.nethttps://...
+        val lastHttp = u.lastIndexOf("http://", ignoreCase = true)
+        val lastHttps = u.lastIndexOf("https://", ignoreCase = true)
+        val lastProtocol = Math.max(lastHttp, lastHttps)
+        
+        if (lastProtocol > 0) {
+            u = u.substring(lastProtocol)
+        }
+        
+        // Remove double protocol prefix
+        u = u.replace(Regex("http(s)?://http(s)?://", RegexOption.IGNORE_CASE), "http$1://")
+        
+        return u.replace(" ", "%20")
+    }
+
+    override fun animeDetailsRequest(anime: SAnime): Request {
+        return GET(fixUrl(anime.url), globalHeaders)
+    }
+
     private val globalHeaders by lazy {
         val cookie = cm.getCookiesHeaders()
         Headers.Builder().apply {
@@ -98,14 +121,14 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 
                 val anime = SAnime.create().apply {
                     this.title = title
-                    this.url = url
+                    this.url = fixUrl(url)
                     
                     val img = element.selectFirst("img[src~=(?i)a11|a_al|poster|banner|thumb], .post-image img, .post-media img, .jws-post-image img, img:not([src~=(?i)back|folder|parent|icon|/icons/])")
                     val rawThumb = img?.attr("abs:data-src")?.ifBlank { null }
                         ?: img?.attr("abs:data-lazy-src")?.ifBlank { null }
                         ?: img?.attr("abs:src")
                     
-                    this.thumbnail_url = rawThumb?.replace(" ", "%20")
+                    this.thumbnail_url = fixUrl(rawThumb ?: "")
                 }
                 animeList.add(anime)
             }
@@ -127,9 +150,9 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                     
                     val anime = SAnime.create().apply {
                         this.title = title
-                        this.url = url
+                        this.url = fixUrl(url)
                         val thumbBase = if (url.endsWith("/")) url else "$url/"
-                        this.thumbnail_url = (thumbBase + "a11.jpg").replace(" ", "%20")
+                        this.thumbnail_url = fixUrl(thumbBase + "a11.jpg")
                     }
                     animeList.add(anime)
                 }
@@ -175,7 +198,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                        if (thumb.isNullOrBlank()) {
                            thumb = document.selectFirst("a[href~=(?i)\\.(jpg|jpeg|png|webp)]:not([href~=(?i)back|folder|parent|icon])")?.attr("abs:href")
                        }
-                       thumbnail_url = thumb
+                       thumbnail_url = fixUrl(thumb ?: "")
                    }
         
         val tmdbImg = getTmdbImageUrl(anime.title)
@@ -197,16 +220,16 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     private fun getMovieDetails(document: Document) = SAnime.create().apply {
         status = SAnime.COMPLETED
-        thumbnail_url = document.select("figure.movie-detail-banner img, .movie-detail-banner img, .col-md-3 img, .poster img")
-            .attr("abs:src").replace(" ", "%20")
+        thumbnail_url = fixUrl(document.select("figure.movie-detail-banner img, .movie-detail-banner img, .col-md-3 img, .poster img")
+            .attr("abs:src"))
         genre = document.select("div.ganre-wrapper a").joinToString { it.text().replace(",", "").trim() }
         description = document.select("p.storyline").text().trim()
     }
 
     private fun getSeriesDetails(document: Document) = SAnime.create().apply {
         status = SAnime.ONGOING
-        thumbnail_url = document.select("figure.movie-detail-banner img, .movie-detail-banner img, .col-md-3 img, .poster img")
-            .attr("abs:src").replace(" ", "%20")
+        thumbnail_url = fixUrl(document.select("figure.movie-detail-banner img, .movie-detail-banner img, .col-md-3 img, .poster img")
+            .attr("abs:src"))
         genre = document.select("div.ganre-wrapper a").joinToString { it.text().replace(",", "").trim() }
         description = document.select("p.storyline").text().trim()
     }
@@ -214,9 +237,15 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     private fun getTmdbImageUrl(title: String): String? {
         val key = tmdbApiKey
         if (key.isBlank()) return null
-        val url = "https://api.themoviedb.org/3/search/multi?api_key=$key&query=".plus(java.net.URLEncoder.encode(title, "UTF-8"))
+        
+        val cleanTitle = title.replace(Regex("\\(\\d{4}\\)"), "").trim()
+        val url = "https://api.themoviedb.org/3/search/multi?api_key=$key&query=".plus(java.net.URLEncoder.encode(cleanTitle, "UTF-8"))
+        val tmdbHeaders = Headers.Builder()
+            .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .build()
+            
         return try {
-            val response = client.newCall(GET(url)).execute()
+            val response = client.newCall(GET(url, tmdbHeaders)).execute()
             val json = response.body?.string() ?: ""
             val regex = """poster_path":"([^"]+)"""".toRegex()
             regex.find(json)?.groupValues?.get(1)?.let { "https://image.tmdb.org/t/p/w500$it" }
