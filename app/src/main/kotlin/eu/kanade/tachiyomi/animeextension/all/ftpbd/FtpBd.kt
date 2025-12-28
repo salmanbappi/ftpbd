@@ -75,6 +75,15 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         return GET(fixUrl(anime.url), globalHeaders)
     }
 
+    override fun imageRequest(anime: SAnime): Request {
+        val url = fixUrl(anime.thumbnail_url ?: "")
+        return if (url.contains("tmdb.org")) {
+            GET(url, Headers.Builder().add("User-Agent", "Mozilla/5.0").build())
+        } else {
+            GET(url, globalHeaders)
+        }
+    }
+
     private val globalHeaders by lazy {
         val cookie = cm.getCookiesHeaders()
         Headers.Builder().apply {
@@ -83,6 +92,13 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 add("Cookie", cookie)
             }
         }.build()
+    }
+
+    private val tmdbHeaders by lazy {
+        Headers.Builder()
+            .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .add("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1Y2Q0OWFlYWY5NDE2MWIxZTdiYWRiMjM4MjBmNmVhOSIsIm5iZiI6MTc1MTYzNTQzNS44NzM5OTk4LCJzdWIiOiI2ODY3ZDVlYmUzZDMxMmU1OGI2NzczNmYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.etziZE5AbWlUmsjFWwTWJ5C0GKYHqLb31kYzS6IwFXU")
+            .build()
     }
 
     private fun getBetterImageUrl(url: String): String {
@@ -349,10 +365,6 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val key = tmdbApiKey
         if (key.isBlank()) return null
         
-        val tmdbHeaders = Headers.Builder()
-            .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-            .build()
-
         if (document != null) {
             val html = document.html()
             
@@ -362,7 +374,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 val type = tmdbIdMatch.groupValues[1]
                 val id = tmdbIdMatch.groupValues[2]
                 try {
-                    val res = client.newCall(GET("https://api.themoviedb.org/3/$type/$id?api_key=$key", tmdbHeaders)).execute()
+                    val res = client.newCall(GET("https://api.themoviedb.org/3/$type/$id", tmdbHeaders)).execute()
                     val poster = Regex("""poster_path":"([^"]+)"""").find(res.body?.string() ?: "")?.groupValues?.get(1)
                     if (poster != null) return "https://image.tmdb.org/t/p/w500$poster"
                 } catch (e: Exception) {}
@@ -373,7 +385,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             if (imdbIdMatch != null) {
                 val imdbId = imdbIdMatch.groupValues[1]
                 try {
-                    val res = client.newCall(GET("https://api.themoviedb.org/3/find/$imdbId?api_key=$key&external_source=imdb_id", tmdbHeaders)).execute()
+                    val res = client.newCall(GET("https://api.themoviedb.org/3/find/$imdbId?external_source=imdb_id", tmdbHeaders)).execute()
                     val poster = Regex("""poster_path":"([^"]+)"""").find(res.body?.string() ?: "")?.groupValues?.get(1)
                     if (poster != null) return "https://image.tmdb.org/t/p/w500$poster"
                 } catch (e: Exception) {}
@@ -385,7 +397,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val yearMatch = Regex("\\((\\d{4})\\)").find(title)
         val year = yearMatch?.groupValues?.get(1)
         
-        var searchUrl = "https://api.themoviedb.org/3/search/multi?api_key=$key&query=${URLEncoder.encode(cleanTitle, "UTF-8")}"
+        var searchUrl = "https://api.themoviedb.org/3/search/multi?query=${URLEncoder.encode(cleanTitle, "UTF-8")}"
         if (year != null) searchUrl += "&primary_release_year=${URLEncoder.encode(year, "UTF-8")}"
             
         return try {
