@@ -83,7 +83,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         }
         .build()
 
-    private fun globalHeaders: Headers {
+    private fun getGlobalHeaders(): Headers {
         val cookie = cm.getCookiesHeaders()
         return Headers.Builder().apply {
             add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
@@ -114,16 +114,6 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     override fun animeDetailsRequest(anime: SAnime): Request {
         return GET(fixUrl(anime.url))
-    }
-
-    private val globalHeaders by lazy {
-        val cookie = cm.getCookiesHeaders()
-        Headers.Builder().apply {
-            add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-            if (cookie.isNotBlank()) {
-                add("Cookie", cookie)
-            }
-        }.build()
     }
 
     private val tmdbHeaders by lazy {
@@ -274,7 +264,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 async(Dispatchers.IO) {
                     semaphore.withPermit {
                         try {
-                            val response = client.newCall(GET(path, globalHeaders)).execute()
+                            val response = client.newCall(GET(path, getGlobalHeaders())).execute()
                             if (!response.isSuccessful) return@withPermit emptyList<SAnime>()
                             val doc = response.asJsoup()
                             parseSearchDocument(doc, query, path)
@@ -338,7 +328,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request {
-        return GET(Filters.getUrl(query, filters), globalHeaders)
+        return GET(Filters.getUrl(query, filters), getGlobalHeaders())
     }
 
     override fun searchAnimeParse(response: Response): AnimesPage = popularAnimeParse(response)
@@ -444,7 +434,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     // ============================== Episodes ==============================
     override suspend fun getEpisodeList(anime: SAnime): List<SEpisode> {
-        val response = client.newCall(GET(anime.url, globalHeaders)).awaitSuccess()
+        val response = client.newCall(GET(anime.url, getGlobalHeaders())).awaitSuccess()
         val document = response.asJsoup()
         val mediaType = getMediaType(document)
         
@@ -532,7 +522,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 })
             } else if (depth > 0 && href.endsWith("/") && !href.contains("_h5ai")) {
                 try {
-                    val subDoc = client.newCall(GET(href, globalHeaders)).awaitSuccess().asJsoup()
+                    val subDoc = client.newCall(GET(href, getGlobalHeaders())).awaitSuccess().asJsoup()
                     parseDirectoryRecursive(subDoc, depth - 1, episodes, visited)
                 } catch (e: Exception) {}
             }
