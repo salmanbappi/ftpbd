@@ -61,10 +61,10 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                     .apply {
                         if (url.contains("tmdb.org")) {
                             if (url.contains("api.themoviedb.org")) {
-                                addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1Y2Q0OWFlYWY5NDE2MWIxZTdiYWRiMjM4MjBmNmVhOTIsIm5iZiI6MTc1MTYzNTQzNS44NzM5OTk4LCJzdWIiOiI2ODY3ZDVlYmUzZDMxMmU1OGI2NzczNmYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.etziZE5AbWlUmsjFWwTWJ5C0GKYHqLb31kYzS6IwFXU")
+                                addHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1Y2Q0OWFlYWY5NDE2MWIxZTdiYWRiMjM4MjBmNmVhOSIsIm5iZiI6MTc1MTYzNTQzNS44NzM5OTk4LCJzdWIiOiI2ODY3ZDVlYmUzZDMxMmU1OGI2NzczNmYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.etziZE5AbWlUmsjFWwTWJ5C0GKYHqLb31kYzS6IwFXU")
                             }
                             removeHeader("User-Agent")
-                            addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                            addHeader("User-Agent", "Mozilla/5.0")
                         } else if (url.contains("ftpbd.net")) {
                             val cookie = cm.getCookiesHeaders()
                             removeHeader("User-Agent")
@@ -82,6 +82,16 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             }
         }
         .build()
+
+    private fun getGlobalHeaders(): Headers {
+        val cookie = cm.getCookiesHeaders()
+        return Headers.Builder().apply {
+            add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            if (cookie.isNotBlank()) {
+                add("Cookie", cookie)
+            }
+        }.build()
+    }
 
     private fun fixUrl(url: String): String {
         if (url.isBlank()) return url
