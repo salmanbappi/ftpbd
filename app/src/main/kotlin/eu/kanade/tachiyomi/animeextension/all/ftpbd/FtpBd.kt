@@ -415,7 +415,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             // Remove anything in parentheses
             .replace(Regex("\\([^)]*\\)"), "")
             // Remove anything in square brackets
-            .replace(Regex("[[^\]]*]"), "")
+            .replace(Regex("[^\\]*\]"), "")
             // Remove quality indicators
             .replace(Regex("(?i)(480p|720p|1080p|2160p|4k|uhd|hdr|web-?dl|blu-?ray|dvdrip|brrip|webrip).*?(?=\\s|$)"), "")
             // Remove episode/season markers
@@ -488,7 +488,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                        val img = document.selectFirst("div.jws-images img, img[src~=(?i)a11|a_al|poster|banner|thumb], img:not([src~=(?i)back|folder|parent|icon|/icons/])")
                        var thumb = img?.attr("abs:src")
                        if (thumb.isNullOrBlank()) {
-                           thumb = document.selectFirst("a[href~=(?i)\.(jpg|jpeg|png|webp)]:not([href~=(?i)back|folder|parent|icon])")?.attr("abs:href")
+                           thumb = document.selectFirst("a[href~=(?i)\\.(jpg|jpeg|png|webp)]:not([href~=(?i)back|folder|parent|icon])")?.attr("abs:href")
                        }
                        thumbnail_url = getBetterImageUrl(thumb ?: "")
                    }
