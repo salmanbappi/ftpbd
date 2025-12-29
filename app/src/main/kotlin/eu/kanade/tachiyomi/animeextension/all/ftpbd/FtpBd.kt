@@ -282,17 +282,29 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         }
     }
 
-    private val directoryCache = java.util.concurrent.ConcurrentHashMap<String, List<SEpisode>>()
-
     override suspend fun getEpisodeList(anime: SAnime): List<SEpisode> {
         val currentUrl = fixUrl(anime.url)
-        directoryCache[currentUrl]?.let { return it }
+        val cacheKey = "cache_" + currentUrl.hashCode()
+        
+        // Try to load from Persistent Cache
+        val cachedData = preferences.getString(cacheKey, null)
+        if (cachedData != null) {
+            return cachedData.split("|").map { 
+                SEpisode.create().apply { 
+                    val parts = it.split(">>")
+                    url = parts[0]
+                    name = parts[1]
+                }
+            }
+        }
 
         val response = client.newCall(GET(currentUrl, getGlobalHeaders())).awaitSuccess()
-        val document = response.asJsoup()
-        val episodes = getDirectoryEpisodes(document)
+        val episodes = getDirectoryEpisodes(response.asJsoup())
         
-        if (episodes.isNotEmpty()) directoryCache[currentUrl] = episodes
+        // Save to Persistent Cache
+        val serializable = episodes.joinToString("|") { "${it.url}>>${it.name}" }
+        preferences.edit().putString(cacheKey, serializable).apply()
+        
         return episodes
     }
 
