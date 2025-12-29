@@ -24,6 +24,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.jsoup.nodes.Document
+import java.net.URLDecoder
 import java.net.URLEncoder
 import kotlin.text.*
 import kotlinx.coroutines.Dispatchers
@@ -254,17 +255,6 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         }
     }
 
-    private fun diceCoefficient(s1: String, s2: String): Double {
-        val str1 = s1.lowercase()
-        val str2 = s2.lowercase()
-        if (str1.length < 2 || str2.length < 2) return if (str1.contains(str2) || str2.contains(str1)) 0.5 else 0.0
-        val pairs1 = (0 until str1.length - 1).map { str1.substring(it, it + 2) }.toSet()
-        val pairs2 = (0 until str2.length - 1).map { str2.substring(it, it + 2) }
-        var intersection = 0
-        for (pair in pairs2) if (pair in pairs1) intersection++
-        return 2.0 * intersection / (pairs1.size + pairs2.size)
-    }
-
     override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request {
         return GET(Filters.getUrl(baseDomain, query, filters), getGlobalHeaders())
     }
@@ -282,6 +272,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         }
     }
 
+    // ============================== Episodes ==============================
     override suspend fun getEpisodeList(anime: SAnime): List<SEpisode> {
         val currentUrl = fixUrl(anime.url)
         val cacheKey = "cache_" + currentUrl.hashCode()
@@ -289,7 +280,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         // Try to load from Persistent Cache
         val cachedData = preferences.getString(cacheKey, null)
         if (cachedData != null) {
-            return cachedData.split("|").map { 
+            return cachedData.split("|").filter { it.contains(">>") }.map { 
                 SEpisode.create().apply { 
                     val parts = it.split(">>")
                     url = parts[0]
@@ -308,6 +299,43 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         return episodes
     }
 
+    private suspend fun getDirectoryEpisodes(document: Document): List<SEpisode> {
+        val episodes = mutableListOf<SEpisode>()
+        parseDirectoryRecursive(document, 3, episodes, mutableSetOf())
+        return episodes.sortedBy { it.name }.reversed()
+    }
+
+    private suspend fun parseDirectoryRecursive(document: Document, depth: Int, episodes: MutableList<SEpisode>, visited: MutableSet<String>) {
+        val currentUrl = document.location()
+        if (!visited.add(currentUrl)) return
+
+        document.select("a[href]").forEach { link ->
+            val href = link.attr("abs:href").ifBlank {
+                val r = link.attr("href")
+                if (r.startsWith("http")) r else currentUrl.removeSuffix("/") + "/" + r.removePrefix("/")
+            }
+            val text = link.text().trim()
+            if (isIgnored(text) || href.contains("?")) return@forEach
+            
+            val lowerHref = href.toLowerCase()
+            if (listOf(".mkv", ".mp4", ".avi", ".ts", ".m4v", ".webm", ".mov").any { lowerHref.endsWith(it) }) {
+                episodes.add(SEpisode.create().apply {
+                    this.name = text
+                    this.url = href
+                    this.episode_number = -1f
+                })
+            } else if (depth > 0 && href.endsWith("/") && !href.contains("_h5ai")) {
+                try {
+                    val subDoc = client.newCall(GET(href, getGlobalHeaders())).awaitSuccess().asJsoup()
+                    parseDirectoryRecursive(subDoc, depth - 1, episodes, visited)
+                } catch (e: Exception) {}
+            }
+        }
+    }
+
+    override fun episodeListParse(response: Response): List<SEpisode> = throw UnsupportedOperationException()
+
+    // ============================ Video Links =============================
     override suspend fun getVideoList(episode: SEpisode): List<Video> {
         val videoUrl = fixUrl(episode.url)
         val headers = Headers.Builder()
