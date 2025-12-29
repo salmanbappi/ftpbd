@@ -282,52 +282,27 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         }
     }
 
-    // ============================== Episodes ==============================
+    private val directoryCache = java.util.concurrent.ConcurrentHashMap<String, List<SEpisode>>()
+
     override suspend fun getEpisodeList(anime: SAnime): List<SEpisode> {
-        val response = client.newCall(GET(anime.url, getGlobalHeaders())).awaitSuccess()
+        val currentUrl = fixUrl(anime.url)
+        directoryCache[currentUrl]?.let { return it }
+
+        val response = client.newCall(GET(currentUrl, getGlobalHeaders())).awaitSuccess()
         val document = response.asJsoup()
-        return getDirectoryEpisodes(document)
+        val episodes = getDirectoryEpisodes(document)
+        
+        if (episodes.isNotEmpty()) directoryCache[currentUrl] = episodes
+        return episodes
     }
 
-    private suspend fun getDirectoryEpisodes(document: Document): List<SEpisode> {
-        val episodes = mutableListOf<SEpisode>()
-        parseDirectoryRecursive(document, 3, episodes, mutableSetOf())
-        return episodes.sortedBy { it.name }.reversed()
-    }
-
-    private suspend fun parseDirectoryRecursive(document: Document, depth: Int, episodes: MutableList<SEpisode>, visited: MutableSet<String>) {
-        val currentUrl = document.location()
-        if (!visited.add(currentUrl)) return
-
-        document.select("a[href]").forEach { link ->
-            val href = link.attr("abs:href").ifBlank {
-                val r = link.attr("href")
-                if (r.startsWith("http")) r else currentUrl.removeSuffix("/") + "/" + r.removePrefix("/")
-            }
-            val text = link.text().trim()
-            if (isIgnored(text) || href.contains("?")) return@forEach
-            
-            val lowerHref = href.toLowerCase()
-            if (listOf(".mkv", ".mp4", ".avi", ".ts", ".m4v", ".webm", ".mov").any { lowerHref.endsWith(it) }) {
-                episodes.add(SEpisode.create().apply {
-                    this.name = text
-                    this.url = href
-                    this.episode_number = -1f
-                })
-            } else if (depth > 0 && href.endsWith("/") && !href.contains("_h5ai")) {
-                try {
-                    val subDoc = client.newCall(GET(href, getGlobalHeaders())).awaitSuccess().asJsoup()
-                    parseDirectoryRecursive(subDoc, depth - 1, episodes, visited)
-                } catch (e: Exception) {}
-            }
-        }
-    }
-
-    override fun episodeListParse(response: Response): List<SEpisode> = throw UnsupportedOperationException()
-
-    // ============================ Video Links =============================
     override suspend fun getVideoList(episode: SEpisode): List<Video> {
-        return listOf(Video(episode.url, "Video", episode.url))
+        val videoUrl = fixUrl(episode.url)
+        val headers = Headers.Builder()
+            .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .add("Referer", baseUrl + "/")
+            .build()
+        return listOf(Video(videoUrl, "Direct Video", videoUrl, headers = headers))
     }
 
     override fun videoListParse(response: Response): List<Video> = throw UnsupportedOperationException()
