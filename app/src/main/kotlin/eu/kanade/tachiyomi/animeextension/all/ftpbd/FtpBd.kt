@@ -60,13 +60,12 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     override val client: OkHttpClient = network.client.newBuilder()
         .addInterceptor { chain ->
             val request = chain.request()
-            val url = request.url.toString()
-            val host = try { request.url.host } catch (e: Exception) { "" }
+            val url = request.url
             
-            if (host.contains(baseDomain)) {
+            if (url.host.contains(baseDomain)) {
                 val newRequest = request.newBuilder()
                     .apply {
-                        val cookie = cm.getCookiesHeaders(url)
+                        val cookie = cm.getCookiesHeaders(url.toString())
                         removeHeader("User-Agent")
                         addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
                         if (cookie.isNotBlank()) {
@@ -90,13 +89,15 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     private fun fixUrl(url: String): String {
         if (url.isBlank()) return url
-        var u = url.trim()
-        val lastHttp = u.lastIndexOf("http://", ignoreCase = true)
-        val lastHttps = u.lastIndexOf("https://", ignoreCase = true)
-        val lastProtocol = Math.max(lastHttp, lastHttps)
-        if (lastProtocol > 0) u = u.substring(lastProtocol)
-        u = u.replace(Regex("http(s)?://http(s)?://", RegexOption.IGNORE_CASE), "http$1://")
-        return u.replace(" ", "%20")
+        return runCatching {
+            var u = url.trim()
+            val lastHttp = u.lastIndexOf("http://", ignoreCase = true)
+            val lastHttps = u.lastIndexOf("https://", ignoreCase = true)
+            val lastProtocol = maxOf(lastHttp, lastHttps)
+            if (lastProtocol > 0) u = u.substring(lastProtocol)
+            u.replace(Regex("http(s)?://http(s)?://", RegexOption.IGNORE_CASE), "http$1://")
+                .replace(" ", "%20")
+        }.getOrDefault(url)
     }
 
     override fun animeDetailsRequest(anime: SAnime): Request {
@@ -113,63 +114,68 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     // ============================== Popular ===============================
-    override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/FTP-3/Hindi%20Movies/2025/", getGlobalHeaders())
+    override fun popularAnimeRequest(page: Int): Request {
+        val url = baseUrl.toHttpUrl().newBuilder()
+            .addPathSegments("FTP-3/Hindi Movies/2025/")
+            .build()
+        return GET(url, getGlobalHeaders())
+    }
 
     override fun popularAnimeParse(response: Response): AnimesPage {
-        val document = response.asJsoup()
-        val animeList = mutableListOf<SAnime>()
-        val isSearch = response.request.url.toString().contains("?s=")
+        return runCatching {
+            val document = response.asJsoup()
+            val animeList = mutableListOf<SAnime>()
+            val isSearch = response.request.url.queryParameter("s") != null
 
-        // Restore grid/item parsing but with empty thumbnails for speed
-        val items = document.select("div.card, article, .jws-post-item, .post-item, .movie-item, .jws-post-wrapper")
-        if (items.isNotEmpty()) {
-            items.forEach { element ->
-                val link = element.selectFirst("h5 a, h2 a, h3 a, h4 a, .post-image a, .post-media a, a:has(img), .jws-post-image a") ?: return@forEach
-                val url = link.attr("abs:href")
-                
-                var title = link.text().trim()
-                if (title.isBlank()) {
-                    title = element.selectFirst("h5, h2, h3, h4, .post-title, .movie-title, .jws-post-title")?.text()?.trim() ?: ""
-                }
-                if (title.isBlank()) {
-                    title = element.selectFirst("img")?.attr("alt")?.trim() ?: ""
-                }
-                
-                if (title.isBlank() || (isSearch && (title.contains("Director", true) || title.contains("Actor", true)))) return@forEach
-                
-                val anime = SAnime.create().apply {
-                    this.title = title
-                    this.url = fixUrl(url)
-                    this.thumbnail_url = "" // Optimized: No images
-                }
-                animeList.add(anime)
-            }
-        } else {
-            // Fallback to directory listing
-            val docUrl = document.location()
-            document.select("#fallback table tr, div.entry-content a, table tr").forEach { it ->
-                val link = it.selectFirst("td.fb-n a") ?: if (it.tagName() == "a") it else null
-                link?.let {
-                    var title = it.text().trim()
-                    if (isIgnored(title)) return@forEach
-                    if (title.endsWith("/")) title = title.removeSuffix("/")
+            // Restore grid/item parsing but with empty thumbnails for speed
+            val items = document.select("div.card, article, .jws-post-item, .post-item, .movie-item, .jws-post-wrapper")
+            if (items.isNotEmpty()) {
+                items.forEach { element ->
+                    val link = element.selectFirst("h5 a, h2 a, h3 a, h4 a, .post-image a, .post-media a, a:has(img), .jws-post-image a") ?: return@forEach
+                    val url = link.attr("abs:href")
                     
-                    val url = it.attr("abs:href").ifBlank { 
-                        val href = it.attr("href")
-                        if (href.startsWith("http")) href else docUrl.removeSuffix("/") + "/" + href.removePrefix("/")
+                    var title = link.text().trim()
+                    if (title.isBlank()) {
+                        title = element.selectFirst("h5, h2, h3, h4, .post-title, .movie-title, .jws-post-title")?.text()?.trim() ?: ""
                     }
-                    if (url.contains("../") || url.contains("?")) return@forEach
+                    if (title.isBlank()) {
+                        title = element.selectFirst("img")?.attr("alt")?.trim() ?: ""
+                    }
                     
-                    val anime = SAnime.create().apply {
+                    if (title.isBlank() || (isSearch && (title.contains("Director", true) || title.contains("Actor", true)))) return@forEach
+                    
+                    animeList.add(SAnime.create().apply {
                         this.title = title
                         this.url = fixUrl(url)
                         this.thumbnail_url = "" // Optimized: No images
+                    })
+                }
+            } else {
+                // Fallback to directory listing
+                val docUrl = document.location()
+                document.select("#fallback table tr, div.entry-content a, table tr").forEach { it ->
+                    val link = it.selectFirst("td.fb-n a") ?: if (it.tagName() == "a") it else null
+                    link?.let {
+                        var title = it.text().trim()
+                        if (isIgnored(title)) return@forEach
+                        if (title.endsWith("/")) title = title.removeSuffix("/")
+                        
+                        val url = it.attr("abs:href").ifBlank { 
+                            val href = it.attr("href")
+                            if (href.startsWith("http")) href else docUrl.removeSuffix("/") + "/" + href.removePrefix("/")
+                        }
+                        if (url.contains("../") || url.contains("?")) return@forEach
+                        
+                        animeList.add(SAnime.create().apply {
+                            this.title = title
+                            this.url = fixUrl(url)
+                            this.thumbnail_url = "" // Optimized: No images
+                        })
                     }
-                    animeList.add(anime)
                 }
             }
-        }
-        return AnimesPage(animeList, false)
+            AnimesPage(animeList, false)
+        }.getOrElse { AnimesPage(emptyList(), false) }
     }
 
     private fun isIgnored(text: String): Boolean {
@@ -184,6 +190,21 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     // =============================== Search ===============================
     override suspend fun getSearchAnime(page: Int, query: String, filters: AnimeFilterList): AnimesPage {
         if (query.isBlank()) return super.getSearchAnime(page, query, filters)
+
+        val cacheKey = "search_${query.hashCode()}"
+        preferences.getString(cacheKey, null)?.let { cached ->
+            runCatching {
+                val results = cached.split("|").map { 
+                    SAnime.create().apply {
+                        val parts = it.split(">>")
+                        url = parts[0]
+                        title = parts[1]
+                        thumbnail_url = ""
+                    }
+                }
+                return AnimesPage(results, false)
+            }
+        }
 
         return coroutineScope {
             val domain = baseDomain
@@ -202,56 +223,58 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 "https://server5.$domain/FTP-5/Animation%20Movies/"
             )
 
-            val semaphore = Semaphore(15)
+            val semaphore = Semaphore(10)
             val results = searchPaths.map { path ->
                 async(Dispatchers.IO) {
                     semaphore.withPermit {
-                        try {
-                            val response = client.newCall(GET(path, getGlobalHeaders())).execute()
-                            if (!response.isSuccessful) return@withPermit emptyList<SAnime>()
-                            val doc = response.asJsoup()
-                            parseSearchDocument(doc, query)
-                        } catch (e: Exception) {
-                            emptyList<SAnime>()
-                        }
+                        runCatching {
+                            client.newCall(GET(path, getGlobalHeaders())).execute().use { response ->
+                                if (!response.isSuccessful) return@runCatching emptyList<SAnime>()
+                                parseSearchDocument(response.asJsoup(), query)
+                            }
+                        }.getOrDefault(emptyList())
                     }
                 }
-            }.awaitAll().flatten().distinctBy { it.url }
+            }.awaitAll().flatten().distinctBy { it.url }.let { sortByTitle(it, query) }
 
-            AnimesPage(sortByTitle(results, query), false)
+            if (results.isNotEmpty()) {
+                val serializable = results.joinToString("|") { "${it.url}>>${it.title}" }
+                preferences.edit().putString(cacheKey, serializable).apply()
+            }
+
+            AnimesPage(results, false)
         }
     }
 
     private fun parseSearchDocument(document: Document, query: String): List<SAnime> {
-        val animeList = mutableListOf<SAnime>()
         val normalizedQuery = query.lowercase()
-        
-        document.select("td.fb-n a, div.entry-content a, table tr a").forEach { link ->
+        return document.select("td.fb-n a, div.entry-content a, table tr a").mapNotNull { link ->
             var title = link.text().trim()
-            if (title.isBlank() || isIgnored(title)) return@forEach
+            if (title.isBlank() || isIgnored(title)) return@mapNotNull null
             if (title.endsWith("/")) title = title.removeSuffix("/")
             
             if (title.lowercase().contains(normalizedQuery)) {
                 val url = link.attr("abs:href")
-                if (url.contains("?") || url.endsWith("..")) return@forEach
+                if (url.contains("?") || url.endsWith("..")) return@mapNotNull null
                 
-                animeList.add(SAnime.create().apply {
+                SAnime.create().apply {
                     this.title = title
                     this.url = fixUrl(url)
                     this.thumbnail_url = ""
-                })
-            }
+                }
+            } else null
         }
-        return animeList
     }
 
     private fun sortByTitle(list: List<SAnime>, query: String): List<SAnime> {
         val normalizedQuery = query.lowercase()
         return list.sortedByDescending { 
-            if (it.title.lowercase() == normalizedQuery) 2.0
-            else if (it.title.lowercase().startsWith(normalizedQuery)) 1.5
-            else if (it.title.lowercase().contains(normalizedQuery)) 1.0
-            else 0.0
+            when {
+                it.title.lowercase() == normalizedQuery -> 2.0
+                it.title.lowercase().startsWith(normalizedQuery) -> 1.5
+                it.title.lowercase().contains(normalizedQuery) -> 1.0
+                else -> 0.0
+            }
         }
     }
 
@@ -267,7 +290,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         return SAnime.create().apply {
             status = SAnime.UNKNOWN
             thumbnail_url = ""
-            description = document.select("p.storyline, .entry-content p").text().trim().ifBlank { "No description available." }
+            description = document.select("p.storyline, .entry-content p").text().trim().takeIf { it.isNotBlank() } ?: "No description available."
             genre = document.select("div.ganre-wrapper a, .entry-content a[href*='/category/']").joinToString { it.text().trim() }
         }
     }
@@ -275,28 +298,30 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     // ============================== Episodes ==============================
     override suspend fun getEpisodeList(anime: SAnime): List<SEpisode> {
         val currentUrl = fixUrl(anime.url)
-        val cacheKey = "cache_" + currentUrl.hashCode()
+        val cacheKey = "ep_cache_" + currentUrl.hashCode()
         
-        // Try to load from Persistent Cache
-        val cachedData = preferences.getString(cacheKey, null)
-        if (cachedData != null) {
-            return cachedData.split("|").filter { it.contains(">>") }.map { 
-                SEpisode.create().apply { 
-                    val parts = it.split(">>")
-                    url = parts[0]
-                    name = parts[1]
+        preferences.getString(cacheKey, null)?.let { cached ->
+            runCatching {
+                return cached.split("|").filter { it.contains(">>") }.map { 
+                    SEpisode.create().apply { 
+                        val parts = it.split(">>")
+                        url = parts[0]
+                        name = parts[1]
+                    }
                 }
             }
         }
 
-        val response = client.newCall(GET(currentUrl, getGlobalHeaders())).awaitSuccess()
-        val episodes = getDirectoryEpisodes(response.asJsoup())
-        
-        // Save to Persistent Cache
-        val serializable = episodes.joinToString("|") { "${it.url}>>${it.name}" }
-        preferences.edit().putString(cacheKey, serializable).apply()
-        
-        return episodes
+        return runCatching {
+            val response = client.newCall(GET(currentUrl, getGlobalHeaders())).awaitSuccess()
+            val episodes = getDirectoryEpisodes(response.asJsoup())
+            
+            if (episodes.isNotEmpty()) {
+                val serializable = episodes.joinToString("|") { "${it.url}>>${it.name}" }
+                preferences.edit().putString(cacheKey, serializable).apply()
+            }
+            episodes
+        }.getOrDefault(emptyList())
     }
 
     private suspend fun getDirectoryEpisodes(document: Document): List<SEpisode> {
@@ -317,18 +342,18 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             val text = link.text().trim()
             if (isIgnored(text) || href.contains("?")) return@forEach
             
-            val lowerHref = href.toLowerCase()
-            if (listOf(".mkv", ".mp4", ".avi", ".ts", ".m4v", ".webm", ".mov").any { lowerHref.endsWith(it) }) {
+            val lowerHref = href.lowercase()
+            if (VIDEO_EXTENSIONS.any { lowerHref.endsWith(it) }) {
                 episodes.add(SEpisode.create().apply {
                     this.name = text
                     this.url = href
                     this.episode_number = -1f
                 })
             } else if (depth > 0 && href.endsWith("/") && !href.contains("_h5ai")) {
-                try {
+                runCatching {
                     val subDoc = client.newCall(GET(href, getGlobalHeaders())).awaitSuccess().asJsoup()
                     parseDirectoryRecursive(subDoc, depth - 1, episodes, visited)
-                } catch (e: Exception) {}
+                }
             }
         }
     }
@@ -354,7 +379,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         private val lock = Any()
 
         fun getCookiesHeaders(url: String): String {
-            val host = try { url.toHttpUrl().host } catch (e: Exception) { return "" }
+            val host = runCatching { url.toHttpUrl().host }.getOrNull() ?: return ""
             val currentCookies = synchronized(lock) {
                 cookies[host] ?: fetchCookies(url).also { cookies[host] = it }
             }
@@ -362,24 +387,25 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         }
 
         private fun fetchCookies(url: String): List<Cookie> {
-            val hostUrl = try { 
+            val hostUrl = runCatching { 
                 val u = url.toHttpUrl()
                 "${u.scheme}://${u.host}/".toHttpUrl()
-            } catch (e: Exception) { return emptyList() }
+            }.getOrNull() ?: return emptyList()
             
             val req = Request.Builder()
                 .url(hostUrl)
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
                 .build()
-            return try {
-                val res = client.newBuilder().followRedirects(false).build().newCall(req).execute()
-                val cookieList = Cookie.parseAll(hostUrl, res.headers)
-                res.close()
-                cookieList
-            } catch (e: IOException) {
-                emptyList()
-            }
+            return runCatching {
+                client.newBuilder().followRedirects(false).build().newCall(req).execute().use { res ->
+                    Cookie.parseAll(hostUrl, res.headers)
+                }
+            }.getOrDefault(emptyList())
         }
+    }
+
+    companion object {
+        private val VIDEO_EXTENSIONS = listOf(".mkv", ".mp4", ".avi", ".ts", ".m4v", ".webm", ".mov")
     }
 }
 
@@ -402,43 +428,54 @@ object Filters {
         val year = (filters[3] as YearSelect).state
         val lang = (filters[5] as LanguageSelect).state
 
-        var url = when (cat) {
-            0 -> "https://server3.$domain/FTP-3/Hindi%20Movies/"
-            1 -> "https://server2.$domain/FTP-2/English%20Movies/"
-            2 -> "https://server3.$domain/FTP-3/Bangla%20Collection/"
+        val urlBuilder = HttpUrl.Builder()
+            .scheme("https")
+            .host(when (cat) {
+                1, 10, 17, 18, 19 -> "server2.$domain"
+                7, 20 -> "server4.$domain"
+                8, 9, 11 -> "server5.$domain"
+                12, 13, 14, 15 -> "server7.$domain"
+                else -> "server3.$domain"
+            })
+
+        val path = when (cat) {
+            0 -> "FTP-3/Hindi Movies"
+            1 -> "FTP-2/English Movies"
+            2 -> "FTP-3/Bangla Collection"
             3 -> {
-                if (lang > 0) {
-                    return "https://server3.$domain/FTP-3/Foreign%20Language%20Movies/${FilterData.LANGUAGES[lang].replace(" ", "%20")}/"
-                }
-                "https://server3.$domain/FTP-3/Foreign%20Language%20Movies/"
+                if (lang > 0) "FTP-3/Foreign Language Movies/${FilterData.LANGUAGES[lang]}"
+                else "FTP-3/Foreign Language Movies"
             }
-            4 -> "https://server3.$domain/FTP-3/South%20Indian%20Movies/"
-            5 -> "https://server3.$domain/FTP-3/Hindi%20TV%20Series/"
-            6 -> "https://server3.$domain/FTP-3/South%20Indian%20TV%20Serias/"
-            7 -> "https://server4.$domain/FTP-4/English-Foreign-TV-Series/"
-            8 -> "https://server5.$domain/FTP-5/Anime--Cartoon-TV-Series/"
-            9 -> "https://server5.$domain/FTP-5/Animation%20Movies/"
-            10 -> "https://server2.$domain/FTP-2/3D%20Movies/"
-            11 -> "https://server5.$domain/FTP-5/Documentary/"
-            12 -> "https://server7.$domain/FTP-7/WWE%20Wrestling/"
-            13 -> "https://server7.$domain/FTP-7/All%20Elite%20Wrestling%20%28AEW%29/"
-            14 -> "https://server7.$domain/FTP-7/Ultimate%20Fighting%20Championship%20%28UFC%29/"
-            15 -> "https://server7.$domain/FTP-7/Awards--TV-Shows/"
-            16 -> "https://server3.$domain/FTP-3/Hindi%20Movies/Hindi-4K-Movies/"
-            17 -> "https://server2.$domain/FTP-2/English%20Movies/English-Movies-4K/"
-            18 -> "https://server2.$domain/FTP-2/English%20Movies/Dual-Audio/"
-            19 -> "https://server2.$domain/FTP-2/English%20Movies/IMDB%20TOP%20250/"
-            20 -> "https://server4.$domain/FTP-4/Tutorial/"
-            21 -> return "https://server3.$domain/FTP-3/%5BToday%27s%20Upload%5D/"
-            else -> "https://server3.$domain/FTP-3/"
+            4 -> "FTP-3/South Indian Movies"
+            5 -> "FTP-3/Hindi TV Series"
+            6 -> "FTP-3/South Indian TV Serias"
+            7 -> "FTP-4/English-Foreign-TV-Series"
+            8 -> "FTP-5/Anime--Cartoon-TV-Series"
+            9 -> "FTP-5/Animation Movies"
+            10 -> "FTP-2/3D Movies"
+            11 -> "FTP-5/Documentary"
+            12 -> "FTP-7/WWE Wrestling"
+            13 -> "FTP-7/All Elite Wrestling (AEW)"
+            14 -> "FTP-7/Ultimate Fighting Championship (UFC)"
+            15 -> "FTP-7/Awards--TV-Shows"
+            16 -> "FTP-3/Hindi Movies/Hindi-4K-Movies"
+            17 -> "FTP-2/English Movies/English-Movies-4K"
+            18 -> "FTP-2/English Movies/Dual-Audio"
+            19 -> "FTP-2/English Movies/IMDB TOP 250"
+            20 -> "FTP-4/Tutorial"
+            21 -> "FTP-3/[Today's Upload]"
+            else -> "FTP-3"
         }
 
+        urlBuilder.addPathSegments(path)
         if (year > 0) {
-            url += "${FilterData.YEARS[year].replace(" ", "%20").replace("&", "%26")}/"
+            urlBuilder.addPathSegment(FilterData.YEARS[year])
         }
-        return url
+        
+        return urlBuilder.build().toString() + "/"
     }
 }
+
 
 object FilterData {
     val CATEGORIES = arrayOf(
