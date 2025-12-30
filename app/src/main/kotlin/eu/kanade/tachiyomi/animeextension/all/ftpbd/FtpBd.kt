@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.animeextension.all.ftpbd
 
-import android.app.Application
-import android.content.SharedPreferences
+import android.util.Log
+import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.animesource.ConfigurableAnimeSource
 import eu.kanade.tachiyomi.animesource.model.AnimeFilter
@@ -13,9 +13,16 @@ import eu.kanade.tachiyomi.animesource.model.Video
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.awaitSuccess
-import extensions.utils.addEditTextPreference
 import extensions.utils.asJsoup
 import extensions.utils.getPreferencesLazy
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import okhttp3.Cookie
 import okhttp3.Headers
 import okhttp3.HttpUrl
@@ -24,18 +31,12 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import org.jsoup.nodes.Document
-import java.net.URLDecoder
-import java.net.URLEncoder
-import kotlin.text.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.IOException
+import java.net.URLDecoder
+import java.net.URLEncoder
+import java.util.concurrent.TimeUnit
 
 class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
@@ -53,11 +54,22 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     override val id: Long = 0x53334654504244L
 
-    private val preferences: SharedPreferences by getPreferencesLazy()
+    private val preferences: android.content.SharedPreferences by getPreferencesLazy()
+
+    private val omdbJson = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
 
     private val cm by lazy { CookieManager(network.client) }
 
     override val client: OkHttpClient = network.client.newBuilder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .dispatcher(okhttp3.Dispatcher().apply {
+            maxRequests = 100
+            maxRequestsPerHost = 100
+        })
         .addInterceptor { chain ->
             val request = chain.request()
             val url = request.url.toString()
@@ -88,6 +100,44 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         }.build()
     }
 
+    private suspend fun enrichAnimes(animes: List<SAnime>) {
+        val apiKey = preferences.getString(PREF_OMDB_API_KEY, "") ?: ""
+        if (apiKey.isBlank()) return
+
+        coroutineScope {
+            animes.map { anime ->
+                async {
+                    fetchPoster(anime, apiKey)
+                }
+            }.awaitAll()
+        }
+    }
+
+    private suspend fun fetchPoster(anime: SAnime, apiKey: String) {
+        val cacheKey = "poster_${anime.title.hashCode()}"
+        val cachedPoster = preferences.getString(cacheKey, null)
+
+        if (cachedPoster != null) {
+            anime.thumbnail_url = cachedPoster
+            return
+        }
+
+        try {
+            val cleanTitle = anime.title.replace(Regex("""\(?\d{4}\)?"""), "").trim()
+            val url = "https://www.omdbapi.com/?apikey=$apiKey&t=${URLEncoder.encode(cleanTitle, "UTF-8")}"
+            val response = client.newCall(GET(url)).awaitSuccess()
+            val body = response.body?.string().orEmpty()
+            val omdb = omdbJson.decodeFromString<OMDbResponse>(body)
+
+            if (omdb.Response == "True" && !omdb.Poster.isNullOrBlank() && omdb.Poster != "N/A") {
+                anime.thumbnail_url = omdb.Poster
+                preferences.edit().putString(cacheKey, omdb.Poster).apply()
+            }
+        } catch (e: Exception) {
+            Log.e("FtpBd", "OMDb lookup failed: ${e.message}")
+        }
+    }
+
     private fun fixUrl(url: String): String {
         if (url.isBlank()) return url
         var u = url.trim()
@@ -104,15 +154,27 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        screen.addEditTextPreference(
-            key = "base_url",
-            title = "Base URL (Main Server)",
-            summary = "The main server URL (default: https://server3.ftpbd.net)",
-            default = "https://server3.ftpbd.net",
-        )
+        EditTextPreference(screen.context).apply {
+            key = PREF_OMDB_API_KEY
+            title = "OMDb API Key"
+            summary = "Used for fetching high-quality posters. Get one for free at omdbapi.com"
+            setDefaultValue("")
+        }.also(screen::addPreference)
+
+        EditTextPreference(screen.context).apply {
+            key = "base_url"
+            title = "Base URL (Main Server)"
+            summary = "The main server URL (default: https://server3.ftpbd.net)"
+            setDefaultValue("https://server3.ftpbd.net")
+        }.also(screen::addPreference)
     }
 
     // ============================== Popular ===============================
+    override suspend fun getPopularAnime(page: Int): AnimesPage {
+        val response = client.newCall(popularAnimeRequest(page)).awaitSuccess()
+        return popularAnimeParse(response).also { enrichAnimes(it.animes) }
+    }
+
     override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/FTP-3/Hindi%20Movies/2025/", getGlobalHeaders())
 
     override fun popularAnimeParse(response: Response): AnimesPage {
@@ -178,6 +240,11 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     // =============================== Latest ===============================
+    override suspend fun getLatestUpdates(page: Int): AnimesPage {
+        val response = client.newCall(latestUpdatesRequest(page)).awaitSuccess()
+        return latestUpdatesParse(response).also { enrichAnimes(it.animes) }
+    }
+
     override fun latestUpdatesRequest(page: Int): Request = popularAnimeRequest(page)
     override fun latestUpdatesParse(response: Response): AnimesPage = popularAnimeParse(response)
 
@@ -218,7 +285,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 }
             }.awaitAll().flatten().distinctBy { it.url }
 
-            AnimesPage(sortByTitle(results, query), false)
+            AnimesPage(sortByTitle(results, query), false).also { enrichAnimes(it.animes) }
         }
     }
 
@@ -262,6 +329,14 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     override fun searchAnimeParse(response: Response): AnimesPage = popularAnimeParse(response)
 
     // ============================== Details ===============================
+    override suspend fun getAnimeDetails(anime: SAnime): SAnime {
+        val apiKey = preferences.getString(PREF_OMDB_API_KEY, "") ?: ""
+        if (apiKey.isNotBlank()) {
+            fetchPoster(anime, apiKey)
+        }
+        return super.getAnimeDetails(anime)
+    }
+
     override fun animeDetailsParse(response: Response): SAnime {
         val document = response.asJsoup()
         return SAnime.create().apply {
@@ -381,7 +456,17 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             }
         }
     }
+    companion object {
+        private const val PREF_OMDB_API_KEY = "omdb_api_key"
+    }
 }
+
+@Serializable
+data class OMDbResponse(
+    val Response: String,
+    val Poster: String? = null,
+    val Error: String? = null
+)
 
 object Filters {
     fun getFilterList() = AnimeFilterList(
