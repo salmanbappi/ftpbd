@@ -170,11 +170,6 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     // ============================== Popular ===============================
-    override suspend fun getPopularAnime(page: Int): AnimesPage {
-        val response = client.newCall(popularAnimeRequest(page)).awaitSuccess()
-        return popularAnimeParse(response).also { enrichAnimes(it.animes) }
-    }
-
     override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/FTP-3/Hindi%20Movies/2025/", getGlobalHeaders())
 
     override fun popularAnimeParse(response: Response): AnimesPage {
@@ -240,11 +235,6 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     // =============================== Latest ===============================
-    override suspend fun getLatestUpdates(page: Int): AnimesPage {
-        val response = client.newCall(latestUpdatesRequest(page)).awaitSuccess()
-        return latestUpdatesParse(response).also { enrichAnimes(it.animes) }
-    }
-
     override fun latestUpdatesRequest(page: Int): Request = popularAnimeRequest(page)
     override fun latestUpdatesParse(response: Response): AnimesPage = popularAnimeParse(response)
 
@@ -285,7 +275,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 }
             }.awaitAll().flatten().distinctBy { it.url }
 
-            AnimesPage(sortByTitle(results, query), false).also { enrichAnimes(it.animes) }
+            AnimesPage(sortByTitle(results, query), false)
         }
     }
 
