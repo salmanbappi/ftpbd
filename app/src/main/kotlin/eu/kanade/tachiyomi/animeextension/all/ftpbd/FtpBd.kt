@@ -101,20 +101,27 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     private suspend fun enrichAnimes(animes: List<SAnime>) {
-        val apiKey = preferences.getString(PREF_OMDB_API_KEY, "") ?: ""
+        val source = preferences.getString(PREF_POSTER_SOURCE, "tmdb")
+        if (source != "tmdb") return
+
+        val apiKey = preferences.getString(PREF_TMDB_API_KEY, "") ?: ""
         if (apiKey.isBlank()) return
 
-        coroutineScope {
-            animes.map { anime ->
-                async {
-                    fetchPoster(anime, apiKey)
-                }
-            }.awaitAll()
+        kotlinx.coroutines.withTimeoutOrNull(3000) {
+            coroutineScope {
+                animes.map { anime ->
+                    async {
+                        enrichmentSemaphore.withPermit {
+                            fetchPosterFromTMDb(anime, apiKey)
+                        }
+                    }
+                }.awaitAll()
+            }
         }
     }
 
     private suspend fun fetchPoster(anime: SAnime, apiKey: String) {
-        val cacheKey = "poster_${anime.title.hashCode()}"
+        val cacheKey = "poster_omdb_${anime.title.hashCode()}"
         val cachedPoster = preferences.getString(cacheKey, null)
 
         if (cachedPoster != null) {
@@ -138,6 +145,33 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         }
     }
 
+    private suspend fun fetchPosterFromTMDb(anime: SAnime, apiKey: String) {
+        val cacheKey = "poster_tmdb_${anime.title.hashCode()}"
+        val cachedPoster = preferences.getString(cacheKey, null)
+
+        if (cachedPoster != null) {
+            anime.thumbnail_url = cachedPoster
+            return
+        }
+
+        try {
+            val cleanTitle = anime.title.replace(Regex("""\(?\d{4}\)?"""), "").trim()
+            val url = "https://api.themoviedb.org/3/search/multi?api_key=$apiKey&query=${URLEncoder.encode(cleanTitle, "UTF-8")}"
+            val response = client.newCall(GET(url)).awaitSuccess()
+            val body = response.body?.string().orEmpty()
+            val tmdb = omdbJson.decodeFromString<TMDbResponse>(body)
+
+            val posterPath = tmdb.results?.firstOrNull()?.poster_path
+            if (!posterPath.isNullOrBlank()) {
+                val posterUrl = "https://image.tmdb.org/t/p/w500$posterPath"
+                anime.thumbnail_url = posterUrl
+                preferences.edit().putString(cacheKey, posterUrl).apply()
+            }
+        } catch (e: Exception) {
+            Log.e("FtpBd", "TMDb lookup failed: ${e.message}")
+        }
+    }
+
     private fun fixUrl(url: String): String {
         if (url.isBlank()) return url
         var u = url.trim()
@@ -154,10 +188,26 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
+        androidx.preference.ListPreference(screen.context).apply {
+            key = PREF_POSTER_SOURCE
+            title = "Poster Source"
+            entries = arrayOf("OMDb", "TMDb")
+            entryValues = arrayOf("omdb", "tmdb")
+            summary = "%s"
+            setDefaultValue("tmdb")
+        }.also(screen::addPreference)
+
+        EditTextPreference(screen.context).apply {
+            key = PREF_TMDB_API_KEY
+            title = "TMDb API Key"
+            summary = "Used for TMDb posters. Get one at themoviedb.org"
+            setDefaultValue("")
+        }.also(screen::addPreference)
+
         EditTextPreference(screen.context).apply {
             key = PREF_OMDB_API_KEY
             title = "OMDb API Key"
-            summary = "Used for fetching high-quality posters. Get one for free at omdbapi.com"
+            summary = "Used for OMDb posters. Get one at omdbapi.com"
             setDefaultValue("")
         }.also(screen::addPreference)
 
@@ -170,6 +220,11 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     // ============================== Popular ===============================
+    override suspend fun getPopularAnime(page: Int): AnimesPage {
+        val response = client.newCall(popularAnimeRequest(page)).awaitSuccess()
+        return popularAnimeParse(response).also { enrichAnimes(it.animes) }
+    }
+
     override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/FTP-3/Hindi%20Movies/2025/", getGlobalHeaders())
 
     override fun popularAnimeParse(response: Response): AnimesPage {
@@ -235,12 +290,17 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     // =============================== Latest ===============================
+    override suspend fun getLatestUpdates(page: Int): AnimesPage {
+        val response = client.newCall(latestUpdatesRequest(page)).awaitSuccess()
+        return latestUpdatesParse(response).also { enrichAnimes(it.animes) }
+    }
+
     override fun latestUpdatesRequest(page: Int): Request = popularAnimeRequest(page)
     override fun latestUpdatesParse(response: Response): AnimesPage = popularAnimeParse(response)
 
     // =============================== Search ===============================
     override suspend fun getSearchAnime(page: Int, query: String, filters: AnimeFilterList): AnimesPage {
-        if (query.isBlank()) return super.getSearchAnime(page, query, filters)
+        if (query.isBlank()) return super.getSearchAnime(page, query, filters).also { enrichAnimes(it.animes) }
 
         return coroutineScope {
             val domain = baseDomain
@@ -275,7 +335,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 }
             }.awaitAll().flatten().distinctBy { it.url }
 
-            AnimesPage(sortByTitle(results, query), false)
+            AnimesPage(sortByTitle(results, query), false).also { enrichAnimes(it.animes) }
         }
     }
 
@@ -320,9 +380,13 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     // ============================== Details ===============================
     override suspend fun getAnimeDetails(anime: SAnime): SAnime {
-        val apiKey = preferences.getString(PREF_OMDB_API_KEY, "") ?: ""
-        if (apiKey.isNotBlank()) {
-            fetchPoster(anime, apiKey)
+        val source = preferences.getString(PREF_POSTER_SOURCE, "tmdb")
+        if (source == "omdb") {
+            val apiKey = preferences.getString(PREF_OMDB_API_KEY, "") ?: ""
+            if (apiKey.isNotBlank()) fetchPoster(anime, apiKey)
+        } else {
+            val apiKey = preferences.getString(PREF_TMDB_API_KEY, "") ?: ""
+            if (apiKey.isNotBlank()) fetchPosterFromTMDb(anime, apiKey)
         }
         return super.getAnimeDetails(anime)
     }
@@ -414,6 +478,8 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     override fun getFilterList() = Filters.getFilterList()
 
+    private val enrichmentSemaphore = Semaphore(10)
+
     private class CookieManager(private val client: OkHttpClient) {
         private var cookies = mutableMapOf<String, List<Cookie>>()
         private val lock = Any()
@@ -448,6 +514,8 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
     companion object {
         private const val PREF_OMDB_API_KEY = "omdb_api_key"
+        private const val PREF_TMDB_API_KEY = "tmdb_api_key"
+        private const val PREF_POSTER_SOURCE = "poster_source"
     }
 }
 
@@ -456,6 +524,16 @@ data class OMDbResponse(
     val Response: String,
     val Poster: String? = null,
     val Error: String? = null
+)
+
+@Serializable
+data class TMDbResponse(
+    val results: List<TMDbResult>? = null
+)
+
+@Serializable
+data class TMDbResult(
+    val poster_path: String? = null
 )
 
 object Filters {
