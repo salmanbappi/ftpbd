@@ -216,7 +216,18 @@ class FtpBd(
 
     // ============================== Popular ===============================
     override suspend fun getPopularAnime(page: Int): AnimesPage {
-        val response = client.newCall(popularAnimeRequest(page)).awaitSuccess()
+        val request = popularAnimeRequest(page)
+        
+        // Use streaming for the first page to be ultra-fast
+        if (page == 1) {
+            val streamResults = fetchAnimesStreaming(request, 25)
+            if (streamResults.isNotEmpty()) {
+                return AnimesPage(streamResults, true).also { enrichAnimes(it.animes) }
+            }
+        }
+
+        // Fallback for subsequent pages or if streaming fails
+        val response = client.newCall(request).awaitSuccess()
         val allAnimes = popularAnimeParse(response).animes
         
         val itemsPerPage = 25
@@ -225,6 +236,46 @@ class FtpBd(
         val hasNextPage = page < chunk.size
         
         return AnimesPage(currentPageItems, hasNextPage).also { enrichAnimes(it.animes) }
+    }
+
+    private suspend fun fetchAnimesStreaming(request: Request, limit: Int): List<SAnime> {
+        return kotlinx.coroutines.withContext(Dispatchers.IO) {
+            val animeList = mutableListOf<SAnime>()
+            try {
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) return@withContext emptyList()
+                    val source = response.body?.source() ?: return@withContext emptyList()
+                    
+                    // Regex to find href links in h5ai or standard Apache listings
+                    // Pattern matches: href="[url]" ... >[title]</a>
+                    val linkRegex = Regex("""href="([^"]+)"[^>]*>([^<]+)</a>""", RegexOption.IGNORE_CASE)
+                    
+                    var line: String?
+                    while (source.readUtf8Line().also { line = it } != null && animeList.size < limit) {
+                        linkRegex.findAll(line!!).forEach { match ->
+                            val href = match.groupValues[1]
+                            var title = match.groupValues[2].trim()
+                            
+                            if (isIgnored(title) || href.contains("?") || href.startsWith("/") || href.startsWith("http")) return@forEach
+                            if (title.endsWith("/")) title = title.removeSuffix("/")
+                            
+                            val absoluteUrl = response.request.url.toString().removeSuffix("/") + "/" + href.removePrefix("/")
+                            
+                            animeList.add(SAnime.create().apply {
+                                this.title = title
+                                this.url = fixUrl(absoluteUrl)
+                                this.thumbnail_url = ""
+                            })
+                            
+                            if (animeList.size >= limit) return@use
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("FtpBd", "Streaming failed: ${e.message}")
+            }
+            animeList
+        }
     }
 
     override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/$popularPath", getGlobalHeaders())
