@@ -32,6 +32,7 @@ class FtpBdFactory : AnimeSourceFactory {
             "FTP-2/English%20Movies/2025/",
             listOf(
                 "FTP-2/English%20Movies/2025/",
+                "FTP-2/English%20Movies/2024/",
                 "FTP-2/English%20Movies/English-Movies-4K/",
                 "FTP-2/English%20Movies/Dual-Audio/",
                 "FTP-2/English%20Movies/IMDB%20TOP%20250/",
@@ -47,7 +48,13 @@ class FtpBdFactory : AnimeSourceFactory {
             "FTP-5/Anime--Cartoon-TV-Series/",
             listOf(
                 "FTP-5/Anime--Cartoon-TV-Series/",
-                "FTP-5/Animation%20Movies/",
+                "FTP-5/Animation%20Movies/%282025%29/",
+                "FTP-5/Animation%20Movies/%282024%29/",
+                "FTP-5/Animation%20Movies/%282023%29/",
+                "FTP-5/Animation%20Movies/%282022%29/",
+                "FTP-5/Animation%20Movies/%282021%29/",
+                "FTP-5/Animation%20Movies/4K%20Movies/",
+                "FTP-5/Animation%20Movies/Dual%20Audio/",
                 "FTP-5/Documentary/"
             ),
             FilterData.S5_CATEGORIES

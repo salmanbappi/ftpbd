@@ -25,16 +25,11 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Cookie
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.jsoup.nodes.Document
 import uy.kohesive.injekt.Injekt
@@ -310,7 +305,7 @@ class FtpBd(
             return getCachedAnimesPage(request, page)
         }
 
-        val allResults = fetchH5aiSearch(query)
+        val allResults = fetchRecursiveSearch(query)
 
         val itemsPerPage = 25
         val chunk = allResults.chunked(itemsPerPage)
@@ -318,64 +313,6 @@ class FtpBd(
         val hasNextPage = page < chunk.size
 
         return AnimesPage(currentPageItems, hasNextPage).also { enrichAnimes(it.animes) }
-    }
-
-    private suspend fun fetchH5aiSearch(query: String): List<SAnime> {
-        return kotlinx.coroutines.withContext(Dispatchers.IO) {
-            val rootPath = "/${rootSegment.trim('/')}/"
-            val searchUrl = baseUrl.removeSuffix("/") + rootPath
-
-            val jsonPayload = """{"action":"get","search":{"href":"$rootPath","pattern":"$query","ignorecase":true}}"""
-            val body = jsonPayload.toRequestBody("application/json".toMediaType())
-            val request = Request.Builder().url(searchUrl).post(body).headers(getGlobalHeaders()).build()
-
-            try {
-                client.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) return@withContext fetchRecursiveSearch(query)
-                    val bodyString = response.body?.string() ?: return@withContext fetchRecursiveSearch(query)
-                    if (bodyString.contains("ERR_DISABLED")) return@withContext fetchRecursiveSearch(query)
-                    parseH5aiSearchResponse(bodyString, query, searchUrl)
-                }
-            } catch (e: Exception) {
-                Log.e("FtpBd", "H5ai search failed: ${e.message}")
-                fetchRecursiveSearch(query)
-            }
-        }
-    }
-
-    private fun parseH5aiSearchResponse(jsonStr: String, query: String, searchUrl: String): List<SAnime> {
-        val results = mutableListOf<SAnime>()
-        try {
-            val json = Json.parseToJsonElement(jsonStr)
-            val searchArr = json.jsonObject["search"]?.jsonArray ?: return emptyList()
-
-            searchArr.forEach { element ->
-                val href = element.jsonObject["href"]?.jsonPrimitive?.content?.replace('\\', '/') ?: return@forEach
-                val isFolder = href.endsWith("/")
-                
-                val cleanPath = href.trimEnd('/')
-                val rawTitle = cleanPath.substringAfterLast('/')
-                val title = try { java.net.URLDecoder.decode(rawTitle, "UTF-8") } catch (e: Exception) { rawTitle }
-
-                if (title.isBlank() || isIgnored(title)) return@forEach
-                if (!isFolder && !listOf(".mkv", ".mp4", ".avi", ".ts", ".m4v", ".webm", ".mov").any { href.lowercase().endsWith(it) }) return@forEach
-
-                val absoluteUrl = if (href.startsWith("/")) {
-                    "${baseUrl.toHttpUrl().scheme}://${baseUrl.toHttpUrl().host}${href}"
-                } else {
-                    searchUrl.removeSuffix("/") + "/" + href.removePrefix("/")
-                }
-
-                results.add(SAnime.create().apply {
-                    this.title = title
-                    this.url = fixUrl(absoluteUrl)
-                    this.thumbnail_url = ""
-                })
-            }
-        } catch (e: Exception) {
-            Log.e("FtpBd", "H5ai parse failed: ${e.message}")
-        }
-        return collapseAndSortResults(results, query)
     }
 
     private suspend fun fetchRecursiveSearch(query: String): List<SAnime> {
@@ -395,24 +332,9 @@ class FtpBd(
                         }
                     }
                 }
-            }.awaitAll().flatten()
-            collapseAndSortResults(results, query)
+            }.awaitAll().flatten().distinctBy { it.url }
+            sortByTitle(results, query)
         }
-    }
-
-    private fun collapseAndSortResults(list: List<SAnime>, query: String): List<SAnime> {
-        val distinct = list.distinctBy { it.url }
-        val folders = distinct.filter { it.url.endsWith("/") }.map { it.url }.toSet()
-        val collapsed = if (folders.isEmpty()) distinct else {
-            distinct.filter { 
-                if (it.url.endsWith("/")) true 
-                else {
-                    val parentUrl = it.url.substringBeforeLast('/') + "/"
-                    !folders.contains(parentUrl)
-                }
-            }
-        }
-        return sortByTitle(collapsed, query)
     }
 
     private fun parseSearchDocument(document: Document, query: String): List<SAnime> {
