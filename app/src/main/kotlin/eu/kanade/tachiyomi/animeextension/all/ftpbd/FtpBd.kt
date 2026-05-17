@@ -265,10 +265,14 @@ class FtpBd(
                             val href = match.groupValues[1]
                             var title = match.groupValues[2].trim()
                             
-                            if (isIgnored(title) || href.contains("?") || href.startsWith("/") || href.startsWith("http")) return@forEach
+                            if (isIgnored(title) || href.contains("?") || href.startsWith("http")) return@forEach
                             if (title.endsWith("/")) title = title.removeSuffix("/")
                             
-                            val absoluteUrl = response.request.url.toString().removeSuffix("/") + "/" + href.removePrefix("/")
+                            val absoluteUrl = if (href.startsWith("/")) {
+                                "${baseUrl.toHttpUrl().scheme}://${baseUrl.toHttpUrl().host}${href}"
+                            } else {
+                                response.request.url.toString().removeSuffix("/") + "/" + href.removePrefix("/")
+                            }
                             
                             animeList.add(SAnime.create().apply {
                                 this.title = title
