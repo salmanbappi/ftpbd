@@ -402,7 +402,15 @@ class FtpBd(
 
         var url = "$baseUrl/${path.removePrefix("/")}"
         if (year > 0) {
-            url += "${FilterData.YEARS[year].replace(" ", "%20").replace("&", "%26")}/"
+            val rawYear = FilterData.YEARS[year]
+            val formattedYear = if (name == "FTPBD (Anime)" && cat == 1) {
+                if (rawYear == "1990-&-Before") "(2000)%20%26%20Before" 
+                else if (rawYear == "2001--2010") "(2001--2010)" // Special range if it exists
+                else "($rawYear)"
+            } else {
+                rawYear
+            }
+            url += "${formattedYear.replace(" ", "%20").replace("&", "%26")}/"
         }
         return GET(url, getGlobalHeaders())
     }
@@ -459,7 +467,8 @@ class FtpBd(
 
     private suspend fun getDirectoryEpisodes(document: Document): List<SEpisode> {
         val episodes = mutableListOf<SEpisode>()
-        parseDirectoryRecursive(document, 3, episodes, mutableSetOf())
+        val depth = if (name == "FTPBD (Anime)") 5 else 3
+        parseDirectoryRecursive(document, depth, episodes, mutableSetOf())
         return episodes.sortedBy { it.name }.reversed()
     }
 
