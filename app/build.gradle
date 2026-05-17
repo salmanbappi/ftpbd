@@ -12,8 +12,8 @@ android {
         applicationId = "eu.kanade.tachiyomi.animeextension.all.ftpbd"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1335
-        versionName = "14.1335"
+        versionCode = 1336
+        versionName = "14.1336"
 
         manifestPlaceholders = [
             appName: "FtpBd",
