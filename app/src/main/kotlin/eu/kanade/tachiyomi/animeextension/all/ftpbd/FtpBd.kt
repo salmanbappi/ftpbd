@@ -217,7 +217,14 @@ class FtpBd(
     // ============================== Popular ===============================
     override suspend fun getPopularAnime(page: Int): AnimesPage {
         val response = client.newCall(popularAnimeRequest(page)).awaitSuccess()
-        return popularAnimeParse(response).also { enrichAnimes(it.animes) }
+        val allAnimes = popularAnimeParse(response).animes
+        
+        val itemsPerPage = 25
+        val chunk = allAnimes.chunked(itemsPerPage)
+        val currentPageItems = chunk.getOrNull(page - 1) ?: emptyList()
+        val hasNextPage = page < chunk.size
+        
+        return AnimesPage(currentPageItems, hasNextPage).also { enrichAnimes(it.animes) }
     }
 
     override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/$popularPath", getGlobalHeaders())
@@ -285,7 +292,14 @@ class FtpBd(
     // =============================== Latest ===============================
     override suspend fun getLatestUpdates(page: Int): AnimesPage {
         val response = client.newCall(latestUpdatesRequest(page)).awaitSuccess()
-        return latestUpdatesParse(response).also { enrichAnimes(it.animes) }
+        val allAnimes = latestUpdatesParse(response).animes
+        
+        val itemsPerPage = 25
+        val chunk = allAnimes.chunked(itemsPerPage)
+        val currentPageItems = chunk.getOrNull(page - 1) ?: emptyList()
+        val hasNextPage = page < chunk.size
+        
+        return AnimesPage(currentPageItems, hasNextPage).also { enrichAnimes(it.animes) }
     }
 
     override fun latestUpdatesRequest(page: Int): Request = popularAnimeRequest(page)
@@ -293,9 +307,19 @@ class FtpBd(
 
     // =============================== Search ===============================
     override suspend fun getSearchAnime(page: Int, query: String, filters: AnimeFilterList): AnimesPage {
-        if (query.isBlank()) return super.getSearchAnime(page, query, filters).also { enrichAnimes(it.animes) }
+        if (query.isBlank()) {
+            val response = client.newCall(searchAnimeRequest(page, query, filters)).awaitSuccess()
+            val allAnimes = searchAnimeParse(response).animes
+            
+            val itemsPerPage = 25
+            val chunk = allAnimes.chunked(itemsPerPage)
+            val currentPageItems = chunk.getOrNull(page - 1) ?: emptyList()
+            val hasNextPage = page < chunk.size
+            
+            return AnimesPage(currentPageItems, hasNextPage).also { enrichAnimes(it.animes) }
+        }
 
-        return coroutineScope {
+        val allResults = coroutineScope {
             val semaphore = Semaphore(15)
             val results = searchPaths.map { path ->
                 async(Dispatchers.IO) {
@@ -312,9 +336,15 @@ class FtpBd(
                     }
                 }
             }.awaitAll().flatten().distinctBy { it.url }
-
-            AnimesPage(sortByTitle(results, query), false).also { enrichAnimes(it.animes) }
+            sortByTitle(results, query)
         }
+
+        val itemsPerPage = 25
+        val chunk = allResults.chunked(itemsPerPage)
+        val currentPageItems = chunk.getOrNull(page - 1) ?: emptyList()
+        val hasNextPage = page < chunk.size
+
+        return AnimesPage(currentPageItems, hasNextPage).also { enrichAnimes(it.animes) }
     }
 
     private fun parseSearchDocument(document: Document, query: String): List<SAnime> {
