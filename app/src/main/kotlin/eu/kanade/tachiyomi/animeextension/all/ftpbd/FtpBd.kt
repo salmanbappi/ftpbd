@@ -1,7 +1,10 @@
 package eu.kanade.tachiyomi.animeextension.all.ftpbd
 
+import android.app.Application
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.animesource.ConfigurableAnimeSource
 import eu.kanade.tachiyomi.animesource.model.AnimeFilter
@@ -14,7 +17,6 @@ import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.awaitSuccess
 import extensions.utils.asJsoup
-import extensions.utils.getPreferencesLazy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -25,7 +27,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.Cookie
 import okhttp3.Headers
-import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -34,16 +35,17 @@ import org.jsoup.nodes.Document
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.IOException
-import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
-class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
-
-    override val name = "FtpBd"
-
-    override val baseUrl: String
-        get() = preferences.getString("base_url", "https://server3.ftpbd.net")!!.removeSuffix("/")
+class FtpBd(
+    override val name: String,
+    override val baseUrl: String,
+    override val id: Long,
+    private val popularPath: String,
+    private val searchPaths: List<String>,
+    private val serverCategories: Array<String>
+) : ConfigurableAnimeSource, AnimeHttpSource() {
 
     private val baseDomain: String
         get() = try { baseUrl.toHttpUrl().host.let { h -> if (h.contains(".") && !h.first().isDigit()) h.substring(h.indexOf(".") + 1) else h } } catch (e: Exception) { "ftpbd.net" }
@@ -52,9 +54,9 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     override val supportsLatest = true
 
-    override val id: Long = 0x53334654504244L
-
-    private val preferences: android.content.SharedPreferences by getPreferencesLazy()
+    private val preferences: SharedPreferences by lazy {
+        Injekt.get<Application>().getSharedPreferences("source_$id", 0)
+    }
 
     private val omdbJson = Json {
         ignoreUnknownKeys = true
@@ -188,7 +190,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        androidx.preference.ListPreference(screen.context).apply {
+        ListPreference(screen.context).apply {
             key = PREF_POSTER_SOURCE
             title = "Poster Source"
             entries = arrayOf("OMDb", "TMDb")
@@ -210,13 +212,6 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             summary = "Used for OMDb posters. Get one at omdbapi.com"
             setDefaultValue("")
         }.also(screen::addPreference)
-
-        EditTextPreference(screen.context).apply {
-            key = "base_url"
-            title = "Base URL (Main Server)"
-            summary = "The main server URL (default: https://server3.ftpbd.net)"
-            setDefaultValue("https://server3.ftpbd.net")
-        }.also(screen::addPreference)
     }
 
     // ============================== Popular ===============================
@@ -225,14 +220,13 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         return popularAnimeParse(response).also { enrichAnimes(it.animes) }
     }
 
-    override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/FTP-3/Hindi%20Movies/2025/", getGlobalHeaders())
+    override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/$popularPath", getGlobalHeaders())
 
     override fun popularAnimeParse(response: Response): AnimesPage {
         val document = response.asJsoup()
         val animeList = mutableListOf<SAnime>()
         val isSearch = response.request.url.toString().contains("?s=")
 
-        // Restore grid/item parsing but with empty thumbnails for speed
         val items = document.select("div.card, article, .jws-post-item, .post-item, .movie-item, .jws-post-wrapper")
         if (items.isNotEmpty()) {
             items.forEach { element ->
@@ -252,12 +246,11 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                 val anime = SAnime.create().apply {
                     this.title = title
                     this.url = fixUrl(url)
-                    this.thumbnail_url = "" // Optimized: No images
+                    this.thumbnail_url = ""
                 }
                 animeList.add(anime)
             }
         } else {
-            // Fallback to directory listing
             val docUrl = document.location()
             document.select("#fallback table tr, div.entry-content a, table tr").forEach { it ->
                 val link = it.selectFirst("td.fb-n a") ?: if (it.tagName() == "a") it else null
@@ -275,7 +268,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
                     val anime = SAnime.create().apply {
                         this.title = title
                         this.url = fixUrl(url)
-                        this.thumbnail_url = "" // Optimized: No images
+                        this.thumbnail_url = ""
                     }
                     animeList.add(anime)
                 }
@@ -303,28 +296,13 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         if (query.isBlank()) return super.getSearchAnime(page, query, filters).also { enrichAnimes(it.animes) }
 
         return coroutineScope {
-            val domain = baseDomain
-            val searchPaths = listOf(
-                "https://server3.$domain/FTP-3/Hindi%20Movies/2025/",
-                "https://server3.$domain/FTP-3/Hindi%20Movies/2024/",
-                "https://server3.$domain/FTP-3/Hindi%20Movies/2023/",
-                "https://server3.$domain/FTP-3/Hindi%20Movies/Hindi-4K-Movies/",
-                "https://server3.$domain/FTP-3/Hindi%20TV%20Series/",
-                "https://server3.$domain/FTP-3/South%20Indian%20Movies/2025/",
-                "https://server3.$domain/FTP-3/Foreign%20Language%20Movies/2025/",
-                "https://server2.$domain/FTP-2/English%20Movies/2025/",
-                "https://server2.$domain/FTP-2/English%20Movies/English-Movies-4K/",
-                "https://server4.$domain/FTP-4/English-Foreign-TV-Series/",
-                "https://server5.$domain/FTP-5/Anime--Cartoon-TV-Series/",
-                "https://server5.$domain/FTP-5/Animation%20Movies/"
-            )
-
             val semaphore = Semaphore(15)
             val results = searchPaths.map { path ->
                 async(Dispatchers.IO) {
                     semaphore.withPermit {
                         try {
-                            val response = client.newCall(GET(path, getGlobalHeaders())).execute()
+                            val pathUrl = if (path.startsWith("http")) path else "$baseUrl/${path.removePrefix("/")}"
+                            val response = client.newCall(GET(pathUrl, getGlobalHeaders())).execute()
                             if (!response.isSuccessful) return@withPermit emptyList<SAnime>()
                             val doc = response.asJsoup()
                             parseSearchDocument(doc, query)
@@ -373,7 +351,60 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
     }
 
     override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request {
-        return GET(Filters.getUrl(baseDomain, query, filters), getGlobalHeaders())
+        val cat = (filters[1] as CategorySelect).state
+        val year = (filters[3] as YearSelect).state
+        val lang = (filters[5] as LanguageSelect).state
+
+        var path = when (name) {
+            "FTPBD (Movies)" -> when (cat) {
+                0 -> "FTP-3/Hindi%20Movies/"
+                1 -> "FTP-3/Bangla%20Collection/"
+                2 -> "FTP-3/South%20Indian%20Movies/"
+                3 -> "FTP-3/Hindi%20TV%20Series/"
+                4 -> "FTP-3/South%20Indian%20TV%20Serias/"
+                5 -> "FTP-3/Foreign%20Language%20Movies/"
+                6 -> "FTP-3/Hindi%20Movies/Hindi-4K-Movies/"
+                7 -> "FTP-3/%5BToday%27s%20Upload%5D/"
+                else -> "FTP-3/"
+            }
+            "FTPBD (English)" -> when (cat) {
+                0 -> "FTP-2/English%20Movies/"
+                1 -> "FTP-2/English%20Movies/English-Movies-4K/"
+                2 -> "FTP-2/English%20Movies/Dual-Audio/"
+                3 -> "FTP-2/English%20Movies/IMDB%20TOP%20250/"
+                4 -> "FTP-2/3D%20Movies/"
+                else -> "FTP-2/"
+            }
+            "FTPBD (Anime)" -> when (cat) {
+                0 -> "FTP-5/Anime--Cartoon-TV-Series/"
+                1 -> "FTP-5/Animation%20Movies/"
+                2 -> "FTP-5/Documentary/"
+                else -> "FTP-5/"
+            }
+            "FTPBD (Series & Tutorial)" -> when (cat) {
+                0 -> "FTP-4/English-Foreign-TV-Series/"
+                1 -> "FTP-4/Tutorial/"
+                else -> "FTP-4/"
+            }
+            "FTPBD (Sports)" -> when (cat) {
+                0 -> "FTP-7/WWE%20Wrestling/"
+                1 -> "FTP-7/All%20Elite%20Wrestling%20%28AEW%29/"
+                2 -> "FTP-7/Ultimate%20Fighting%20Championship%20%28UFC%29/"
+                3 -> "FTP-7/Awards--TV-Shows/"
+                else -> "FTP-7/"
+            }
+            else -> ""
+        }
+
+        if (name == "FTPBD (Movies)" && cat == 5 && lang > 0) {
+            path = "FTP-3/Foreign%20Language%20Movies/${FilterData.LANGUAGES[lang].replace(" ", "%20")}/"
+        }
+
+        var url = "$baseUrl/${path.removePrefix("/")}"
+        if (year > 0) {
+            url += "${FilterData.YEARS[year].replace(" ", "%20").replace("&", "%26")}/"
+        }
+        return GET(url, getGlobalHeaders())
     }
 
     override fun searchAnimeParse(response: Response): AnimesPage = popularAnimeParse(response)
@@ -406,7 +437,6 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val currentUrl = fixUrl(anime.url)
         val cacheKey = "cache_" + currentUrl.hashCode()
         
-        // Try to load from Persistent Cache
         val cachedData = preferences.getString(cacheKey, null)
         if (cachedData != null) {
             return cachedData.split("|").filter { it.contains(">>") }.map { 
@@ -421,7 +451,6 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
         val response = client.newCall(GET(currentUrl, getGlobalHeaders())).awaitSuccess()
         val episodes = getDirectoryEpisodes(response.asJsoup())
         
-        // Save to Persistent Cache
         val serializable = episodes.joinToString("|") { "${it.url}>>${it.name}" }
         preferences.edit().putString(cacheKey, serializable).apply()
         
@@ -446,7 +475,7 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
             val text = link.text().trim()
             if (isIgnored(text) || href.contains("?")) return@forEach
             
-            val lowerHref = href.toLowerCase()
+            val lowerHref = href.lowercase()
             if (listOf(".mkv", ".mp4", ".avi", ".ts", ".m4v", ".webm", ".mov").any { lowerHref.endsWith(it) }) {
                 episodes.add(SEpisode.create().apply {
                     this.name = text
@@ -476,7 +505,18 @@ class FtpBd : ConfigurableAnimeSource, AnimeHttpSource() {
 
     override fun videoListParse(response: Response): List<Video> = throw UnsupportedOperationException()
 
-    override fun getFilterList() = Filters.getFilterList()
+    override fun getFilterList() = AnimeFilterList(
+        AnimeFilter.Header("--- Category ---"),
+        CategorySelect(serverCategories),
+        AnimeFilter.Header("--- Year ---"),
+        YearSelect(),
+        AnimeFilter.Header("--- Language (Foreign Lang. only) ---"),
+        LanguageSelect()
+    )
+
+    class CategorySelect(categories: Array<String>) : AnimeFilter.Select<String>("Select Category", categories)
+    class YearSelect : AnimeFilter.Select<String>("Select Year", FilterData.YEARS)
+    class LanguageSelect : AnimeFilter.Select<String>("Select Language", FilterData.LANGUAGES)
 
     private val enrichmentSemaphore = Semaphore(10)
 
@@ -535,85 +575,3 @@ data class TMDbResponse(
 data class TMDbResult(
     val poster_path: String? = null
 )
-
-object Filters {
-    fun getFilterList() = AnimeFilterList(
-        AnimeFilter.Header("--- Category ---"),
-        CategorySelect(),
-        AnimeFilter.Header("--- Year ---"),
-        YearSelect(),
-        AnimeFilter.Header("--- Language (Foreign Lang. only) ---"),
-        LanguageSelect()
-    )
-
-    class CategorySelect : AnimeFilter.Select<String>("Select Category", FilterData.CATEGORIES)
-    class YearSelect : AnimeFilter.Select<String>("Select Year", FilterData.YEARS)
-    class LanguageSelect : AnimeFilter.Select<String>("Select Language", FilterData.LANGUAGES)
-
-    fun getUrl(domain: String, query: String, filters: AnimeFilterList): String {
-        val cat = (filters[1] as CategorySelect).state
-        val year = (filters[3] as YearSelect).state
-        val lang = (filters[5] as LanguageSelect).state
-
-        var url = when (cat) {
-            0 -> "https://server3.$domain/FTP-3/Hindi%20Movies/"
-            1 -> "https://server2.$domain/FTP-2/English%20Movies/"
-            2 -> "https://server3.$domain/FTP-3/Bangla%20Collection/"
-            3 -> {
-                if (lang > 0) {
-                    return "https://server3.$domain/FTP-3/Foreign%20Language%20Movies/${FilterData.LANGUAGES[lang].replace(" ", "%20")}/"
-                }
-                "https://server3.$domain/FTP-3/Foreign%20Language%20Movies/"
-            }
-            4 -> "https://server3.$domain/FTP-3/South%20Indian%20Movies/"
-            5 -> "https://server3.$domain/FTP-3/Hindi%20TV%20Series/"
-            6 -> "https://server3.$domain/FTP-3/South%20Indian%20TV%20Serias/"
-            7 -> "https://server4.$domain/FTP-4/English-Foreign-TV-Series/"
-            8 -> "https://server5.$domain/FTP-5/Anime--Cartoon-TV-Series/"
-            9 -> "https://server5.$domain/FTP-5/Animation%20Movies/"
-            10 -> "https://server2.$domain/FTP-2/3D%20Movies/"
-            11 -> "https://server5.$domain/FTP-5/Documentary/"
-            12 -> "https://server7.$domain/FTP-7/WWE%20Wrestling/"
-            13 -> "https://server7.$domain/FTP-7/All%20Elite%20Wrestling%20%28AEW%29/"
-            14 -> "https://server7.$domain/FTP-7/Ultimate%20Fighting%20Championship%20%28UFC%29/"
-            15 -> "https://server7.$domain/FTP-7/Awards--TV-Shows/"
-            16 -> "https://server3.$domain/FTP-3/Hindi%20Movies/Hindi-4K-Movies/"
-            17 -> "https://server2.$domain/FTP-2/English%20Movies/English-Movies-4K/"
-            18 -> "https://server2.$domain/FTP-2/English%20Movies/Dual-Audio/"
-            19 -> "https://server2.$domain/FTP-2/English%20Movies/IMDB%20TOP%20250/"
-            20 -> "https://server4.$domain/FTP-4/Tutorial/"
-            21 -> return "https://server3.$domain/FTP-3/%5BToday%27s%20Upload%5D/"
-            else -> "https://server3.$domain/FTP-3/"
-        }
-
-        if (year > 0) {
-            url += "${FilterData.YEARS[year].replace(" ", "%20").replace("&", "%26")}/"
-        }
-        return url
-    }
-}
-
-object FilterData {
-    val CATEGORIES = arrayOf(
-        "Hindi Movies", "English Movies", "Bangla Collection", "Foreign Language Movies",
-        "South Indian Movies", "Hindi TV Series", "South Indian TV Serias",
-        "English & Foreign TV Series", "Anime & Cartoon TV Series", "Animation Movies",
-        "3D Movies", "Documentary", "WWE Wrestling", "All Elite Wrestling (AEW)", "UFC",
-        "Awards & TV Shows", "Hindi 4K Movies", "English 4K Movies", "Dual Audio Movies",
-        "IMDb Top 250", "Tutorial", "Today's Upload"
-    )
-
-    val YEARS = arrayOf(
-        "Any", "2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017",
-        "2016", "2015", "2014", "2013", "2012", "2011", "2001--2010", "1991--2000", "1990-&-Before"
-    )
-
-    val LANGUAGES = arrayOf(
-        "Any", "Arabic Language", "Brazilian-Movie", "Chinese-Language", "Denmark-Movies",
-        "Dutch-Language", "French-Language", "German-Language", "Hong-Kong", "Indonesian-Movie",
-        "Iranian-Movies", "Italian-Movie", "Japanese-Language", "Korean-Language",
-        "Mexico-Language", "Norwegian-Language", "Pakistani-Language", "Polish-Language",
-        "Portuguese-Language", "Russian-Language", "Spanish-Language", "Swedish-Language",
-        "Taiwan", "Thai-Language", "Turkish-Language", "Vietnamese-Language", "Other-Language"
-    )
-}

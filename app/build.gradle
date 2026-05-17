@@ -17,7 +17,7 @@ android {
 
         manifestPlaceholders = [
             appName: "FtpBd",
-            extClass: ".FtpBd",
+            extClass: ".FtpBdFactory",
             nsfw: "0"
         ]
     }
