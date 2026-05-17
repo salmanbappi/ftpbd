@@ -330,7 +330,6 @@ class FtpBd(
 
     private suspend fun fetchH5aiSearch(query: String): List<SAnime> {
         return kotlinx.coroutines.withContext(Dispatchers.IO) {
-            val searchUrl = "$baseUrl/"
             val rootPath = when (name) {
                 "FTPBD (Movies)" -> "/FTP-3/"
                 "FTPBD (English)" -> "/FTP-2/"
@@ -338,6 +337,7 @@ class FtpBd(
                 "FTPBD (Sports)" -> "/FTP-7/"
                 else -> "/"
             }
+            val searchUrl = baseUrl.removeSuffix("/") + rootPath
 
             val jsonPayload = """{"action":"get","search":{"href":"$rootPath","pattern":"$query","ignorecase":true}}"""
             val body = jsonPayload.toRequestBody("application/json".toMediaType())
@@ -371,11 +371,17 @@ class FtpBd(
                 val title = try { java.net.URLDecoder.decode(rawTitle, "UTF-8") } catch (e: Exception) { rawTitle }
 
                 if (title.isBlank() || isIgnored(title)) return@forEach
-                if (!isFolder && !listOf(".mkv", ".mp4", ".avi", ".ts", ".m4v", ".webm", ".mov").any { href.toLowerCase().endsWith(it) }) return@forEach
+                if (!isFolder && !listOf(".mkv", ".mp4", ".avi", ".ts", ".m4v", ".webm", ".mov").any { href.lowercase().endsWith(it) }) return@forEach
+
+                val absoluteUrl = if (href.startsWith("/")) {
+                    "${baseUrl.toHttpUrl().scheme}://${baseUrl.toHttpUrl().host}${href}"
+                } else {
+                    baseUrl.removeSuffix("/") + "/" + href.removePrefix("/")
+                }
 
                 results.add(SAnime.create().apply {
                     this.title = title
-                    this.url = fixUrl("$baseUrl$href")
+                    this.url = fixUrl(absoluteUrl)
                     this.thumbnail_url = ""
                 })
             }
