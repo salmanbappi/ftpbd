@@ -31,8 +31,10 @@ import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Cookie
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.jsoup.nodes.Document
 import uy.kohesive.injekt.Injekt
@@ -41,13 +43,11 @@ import java.io.IOException
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
-
 class FtpBd(
     override val name: String,
     override val baseUrl: String,
     override val id: Long,
+    private val rootSegment: String,
     private val popularPath: String,
     private val searchPaths: List<String>,
     private val serverCategories: Array<String>
@@ -117,7 +117,7 @@ class FtpBd(
 
         kotlinx.coroutines.withTimeoutOrNull(3000) {
             coroutineScope {
-                animes.map { anime ->
+                animes.take(40).map { anime ->
                     async {
                         enrichmentSemaphore.withPermit {
                             fetchPosterFromTMDb(anime, apiKey)
@@ -230,8 +230,6 @@ class FtpBd(
 
     private suspend fun getCachedAnimesPage(request: Request, page: Int): AnimesPage {
         val cacheKey = request.url.toString()
-        
-        // Refresh cache on Page 1
         if (page == 1) directoryCache.remove(cacheKey)
 
         val allAnimes = directoryCache[cacheKey] ?: fetchAnimesStreaming(request).also { 
@@ -255,8 +253,6 @@ class FtpBd(
                 client.newCall(request).execute().use { response ->
                     if (!response.isSuccessful) return@withContext emptyList()
                     val source = response.body?.source() ?: return@withContext emptyList()
-                    
-                    // Ultra-fast Regex parser
                     val linkRegex = Regex("""href="([^"]+)"[^>]*>([^<]+)</a>""", RegexOption.IGNORE_CASE)
                     
                     var line: String?
@@ -291,7 +287,7 @@ class FtpBd(
 
     override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/$popularPath", getGlobalHeaders())
 
-    override fun popularAnimeParse(response: Response): AnimesPage = throw UnsupportedOperationException("Streaming used")
+    override fun popularAnimeParse(response: Response): AnimesPage = throw UnsupportedOperationException()
 
     private fun isIgnored(text: String): Boolean {
         val ignored = listOf("Parent Directory", "modern browsers", "Name", "Last modified", "Size", "Description", "Index of", "JavaScript", "powered by", "_h5ai")
@@ -314,11 +310,7 @@ class FtpBd(
             return getCachedAnimesPage(request, page)
         }
 
-        val allResults = if (name != "FTPBD (Series & Tutorial)") {
-            fetchH5aiSearch(query)
-        } else {
-            fetchRecursiveSearch(query)
-        }
+        val allResults = fetchH5aiSearch(query)
 
         val itemsPerPage = 25
         val chunk = allResults.chunked(itemsPerPage)
@@ -330,13 +322,7 @@ class FtpBd(
 
     private suspend fun fetchH5aiSearch(query: String): List<SAnime> {
         return kotlinx.coroutines.withContext(Dispatchers.IO) {
-            val rootPath = when (name) {
-                "FTPBD (Movies)" -> "/FTP-3/"
-                "FTPBD (English)" -> "/FTP-2/"
-                "FTPBD (Anime)" -> "/FTP-5/"
-                "FTPBD (Sports)" -> "/FTP-7/"
-                else -> "/"
-            }
+            val rootPath = "/${rootSegment.trim('/')}/"
             val searchUrl = baseUrl.removeSuffix("/") + rootPath
 
             val jsonPayload = """{"action":"get","search":{"href":"$rootPath","pattern":"$query","ignorecase":true}}"""
@@ -345,18 +331,19 @@ class FtpBd(
 
             try {
                 client.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) return@withContext emptyList()
-                    val bodyString = response.body?.string() ?: return@withContext emptyList()
-                    parseH5aiSearchResponse(bodyString, query)
+                    if (!response.isSuccessful) return@withContext fetchRecursiveSearch(query)
+                    val bodyString = response.body?.string() ?: return@withContext fetchRecursiveSearch(query)
+                    if (bodyString.contains("ERR_DISABLED")) return@withContext fetchRecursiveSearch(query)
+                    parseH5aiSearchResponse(bodyString, query, searchUrl)
                 }
             } catch (e: Exception) {
                 Log.e("FtpBd", "H5ai search failed: ${e.message}")
-                fetchRecursiveSearch(query) // Fallback
+                fetchRecursiveSearch(query)
             }
         }
     }
 
-    private fun parseH5aiSearchResponse(jsonStr: String, query: String): List<SAnime> {
+    private fun parseH5aiSearchResponse(jsonStr: String, query: String, searchUrl: String): List<SAnime> {
         val results = mutableListOf<SAnime>()
         try {
             val json = Json.parseToJsonElement(jsonStr)
@@ -376,7 +363,7 @@ class FtpBd(
                 val absoluteUrl = if (href.startsWith("/")) {
                     "${baseUrl.toHttpUrl().scheme}://${baseUrl.toHttpUrl().host}${href}"
                 } else {
-                    baseUrl.removeSuffix("/") + "/" + href.removePrefix("/")
+                    searchUrl.removeSuffix("/") + "/" + href.removePrefix("/")
                 }
 
                 results.add(SAnime.create().apply {

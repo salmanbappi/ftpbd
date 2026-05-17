@@ -9,6 +9,7 @@ class FtpBdFactory : AnimeSourceFactory {
             "FTPBD (Movies)",
             "https://server3.ftpbd.net",
             0x53334654504244L,
+            "FTP-3",
             "FTP-3/Hindi%20Movies/2025/",
             listOf(
                 "FTP-3/Hindi%20Movies/2025/",
@@ -27,6 +28,7 @@ class FtpBdFactory : AnimeSourceFactory {
             "FTPBD (English)",
             "https://server2.ftpbd.net",
             0x53324654504244L,
+            "FTP-2",
             "FTP-2/English%20Movies/2025/",
             listOf(
                 "FTP-2/English%20Movies/2025/",
@@ -41,6 +43,7 @@ class FtpBdFactory : AnimeSourceFactory {
             "FTPBD (Anime)",
             "https://server5.ftpbd.net",
             0x53354654504244L,
+            "FTP-5",
             "FTP-5/Anime--Cartoon-TV-Series/",
             listOf(
                 "FTP-5/Anime--Cartoon-TV-Series/",
@@ -53,6 +56,7 @@ class FtpBdFactory : AnimeSourceFactory {
             "FTPBD (Series & Tutorial)",
             "https://server4.ftpbd.net",
             0x53344654504244L,
+            "FTP-4",
             "FTP-4/English-Foreign-TV-Series/",
             listOf(
                 "FTP-4/English-Foreign-TV-Series/",
@@ -64,6 +68,7 @@ class FtpBdFactory : AnimeSourceFactory {
             "FTPBD (Sports)",
             "https://server7.ftpbd.net",
             0x53374654504244L,
+            "FTP-7",
             "FTP-7/WWE%20Wrestling/",
             listOf(
                 "FTP-7/WWE%20Wrestling/",
