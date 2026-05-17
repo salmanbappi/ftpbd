@@ -114,7 +114,7 @@ class FtpBd(
 
         kotlinx.coroutines.withTimeoutOrNull(3000) {
             coroutineScope {
-                animes.take(40).map { anime ->
+                animes.map { anime ->
                     async {
                         enrichmentSemaphore.withPermit {
                             fetchPosterFromTMDb(anime, apiKey)
@@ -217,68 +217,74 @@ class FtpBd(
         }.also(screen::addPreference)
     }
 
+    private val directoryCache = mutableMapOf<String, List<SAnime>>()
+
     // ============================== Popular ===============================
     override suspend fun getPopularAnime(page: Int): AnimesPage {
-        val response = client.newCall(popularAnimeRequest(page)).awaitSuccess()
-        return popularAnimeParse(response).also { enrichAnimes(it.animes) }
+        val request = popularAnimeRequest(page)
+        return getCachedAnimesPage(request, page)
+    }
+
+    private suspend fun getCachedAnimesPage(request: Request, page: Int): AnimesPage {
+        val cacheKey = request.url.toString()
+        
+        // Refresh cache on Page 1
+        if (page == 1) directoryCache.remove(cacheKey)
+
+        val allAnimes = directoryCache[cacheKey] ?: fetchAnimesStreaming(request).also { 
+            if (it.isNotEmpty()) directoryCache[cacheKey] = it 
+        }
+
+        if (allAnimes.isEmpty()) return AnimesPage(emptyList(), false)
+
+        val itemsPerPage = 25
+        val chunk = allAnimes.chunked(itemsPerPage)
+        val currentPageItems = chunk.getOrNull(page - 1) ?: emptyList()
+        val hasNextPage = page < chunk.size
+        
+        return AnimesPage(currentPageItems, hasNextPage).also { enrichAnimes(it.animes) }
+    }
+
+    private suspend fun fetchAnimesStreaming(request: Request): List<SAnime> {
+        return kotlinx.coroutines.withContext(Dispatchers.IO) {
+            val animeList = mutableListOf<SAnime>()
+            try {
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) return@withContext emptyList()
+                    val source = response.body?.source() ?: return@withContext emptyList()
+                    
+                    // Ultra-fast Regex parser
+                    val linkRegex = Regex("""href="([^"]+)"[^>]*>([^<]+)</a>""", RegexOption.IGNORE_CASE)
+                    
+                    var line: String?
+                    while (source.readUtf8Line().also { line = it } != null) {
+                        linkRegex.findAll(line!!).forEach { match ->
+                            val href = match.groupValues[1]
+                            var title = match.groupValues[2].trim()
+                            
+                            if (isIgnored(title) || href.contains("?") || href.startsWith("/") || href.startsWith("http")) return@forEach
+                            if (title.endsWith("/")) title = title.removeSuffix("/")
+                            
+                            val absoluteUrl = response.request.url.toString().removeSuffix("/") + "/" + href.removePrefix("/")
+                            
+                            animeList.add(SAnime.create().apply {
+                                this.title = title
+                                this.url = fixUrl(absoluteUrl)
+                                this.thumbnail_url = ""
+                            })
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("FtpBd", "Streaming failed: ${e.message}")
+            }
+            animeList
+        }
     }
 
     override fun popularAnimeRequest(page: Int): Request = GET("$baseUrl/$popularPath", getGlobalHeaders())
 
-    override fun popularAnimeParse(response: Response): AnimesPage {
-        val document = response.asJsoup()
-        val animeList = mutableListOf<SAnime>()
-        val isSearch = response.request.url.toString().contains("?s=")
-
-        val items = document.select("div.card, article, .jws-post-item, .post-item, .movie-item, .jws-post-wrapper")
-        if (items.isNotEmpty()) {
-            items.forEach { element ->
-                val link = element.selectFirst("h5 a, h2 a, h3 a, h4 a, .post-image a, .post-media a, a:has(img), .jws-post-image a") ?: return@forEach
-                val url = link.attr("abs:href")
-                
-                var title = link.text().trim()
-                if (title.isBlank()) {
-                    title = element.selectFirst("h5, h2, h3, h4, .post-title, .movie-title, .jws-post-title")?.text()?.trim() ?: ""
-                }
-                if (title.isBlank()) {
-                    title = element.selectFirst("img")?.attr("alt")?.trim() ?: ""
-                }
-                
-                if (title.isBlank() || (isSearch && (title.contains("Director", true) || title.contains("Actor", true)))) return@forEach
-                
-                val anime = SAnime.create().apply {
-                    this.title = title
-                    this.url = fixUrl(url)
-                    this.thumbnail_url = ""
-                }
-                animeList.add(anime)
-            }
-        } else {
-            val docUrl = document.location()
-            document.select("#fallback table tr, div.entry-content a, table tr").forEach { it ->
-                val link = it.selectFirst("td.fb-n a") ?: if (it.tagName() == "a") it else null
-                link?.let {
-                    var title = it.text().trim()
-                    if (isIgnored(title)) return@forEach
-                    if (title.endsWith("/")) title = title.removeSuffix("/")
-                    
-                    val url = it.attr("abs:href").ifBlank { 
-                        val href = it.attr("href")
-                        if (href.startsWith("http")) href else docUrl.removeSuffix("/") + "/" + href.removePrefix("/")
-                    }
-                    if (url.contains("../") || url.contains("?")) return@forEach
-                    
-                    val anime = SAnime.create().apply {
-                        this.title = title
-                        this.url = fixUrl(url)
-                        this.thumbnail_url = ""
-                    }
-                    animeList.add(anime)
-                }
-            }
-        }
-        return AnimesPage(animeList, false)
-    }
+    override fun popularAnimeParse(response: Response): AnimesPage = throw UnsupportedOperationException("Streaming used")
 
     private fun isIgnored(text: String): Boolean {
         val ignored = listOf("Parent Directory", "modern browsers", "Name", "Last modified", "Size", "Description", "Index of", "JavaScript", "powered by", "_h5ai")
@@ -287,8 +293,8 @@ class FtpBd(
 
     // =============================== Latest ===============================
     override suspend fun getLatestUpdates(page: Int): AnimesPage {
-        val response = client.newCall(latestUpdatesRequest(page)).awaitSuccess()
-        return latestUpdatesParse(response).also { enrichAnimes(it.animes) }
+        val request = latestUpdatesRequest(page)
+        return getCachedAnimesPage(request, page)
     }
 
     override fun latestUpdatesRequest(page: Int): Request = popularAnimeRequest(page)
@@ -296,7 +302,10 @@ class FtpBd(
 
     // =============================== Search ===============================
     override suspend fun getSearchAnime(page: Int, query: String, filters: AnimeFilterList): AnimesPage {
-        if (query.isBlank()) return super.getSearchAnime(page, query, filters).also { enrichAnimes(it.animes) }
+        if (query.isBlank()) {
+            val request = searchAnimeRequest(page, query, filters)
+            return getCachedAnimesPage(request, page)
+        }
 
         val allResults = if (name != "FTPBD (Series & Tutorial)") {
             fetchH5aiSearch(query)
@@ -304,7 +313,12 @@ class FtpBd(
             fetchRecursiveSearch(query)
         }
 
-        return AnimesPage(allResults, false).also { enrichAnimes(it.animes) }
+        val itemsPerPage = 25
+        val chunk = allResults.chunked(itemsPerPage)
+        val currentPageItems = chunk.getOrNull(page - 1) ?: emptyList()
+        val hasNextPage = page < chunk.size
+
+        return AnimesPage(currentPageItems, hasNextPage).also { enrichAnimes(it.animes) }
     }
 
     private suspend fun fetchH5aiSearch(query: String): List<SAnime> {
@@ -350,8 +364,6 @@ class FtpBd(
                 val title = try { java.net.URLDecoder.decode(rawTitle, "UTF-8") } catch (e: Exception) { rawTitle }
 
                 if (title.isBlank() || isIgnored(title)) return@forEach
-                
-                // Only include video files or folders
                 if (!isFolder && !listOf(".mkv", ".mp4", ".avi", ".ts", ".m4v", ".webm", ".mov").any { href.toLowerCase().endsWith(it) }) return@forEach
 
                 results.add(SAnime.create().apply {
