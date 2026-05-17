@@ -25,6 +25,9 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Cookie
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -111,7 +114,7 @@ class FtpBd(
 
         kotlinx.coroutines.withTimeoutOrNull(3000) {
             coroutineScope {
-                animes.map { anime ->
+                animes.take(40).map { anime ->
                     async {
                         enrichmentSemaphore.withPermit {
                             fetchPosterFromTMDb(anime, apiKey)
@@ -295,6 +298,75 @@ class FtpBd(
     override suspend fun getSearchAnime(page: Int, query: String, filters: AnimeFilterList): AnimesPage {
         if (query.isBlank()) return super.getSearchAnime(page, query, filters).also { enrichAnimes(it.animes) }
 
+        val allResults = if (name != "FTPBD (Series & Tutorial)") {
+            fetchH5aiSearch(query)
+        } else {
+            fetchRecursiveSearch(query)
+        }
+
+        return AnimesPage(allResults, false).also { enrichAnimes(it.animes) }
+    }
+
+    private suspend fun fetchH5aiSearch(query: String): List<SAnime> {
+        return kotlinx.coroutines.withContext(Dispatchers.IO) {
+            val searchUrl = "$baseUrl/"
+            val rootPath = when (name) {
+                "FTPBD (Movies)" -> "/FTP-3/"
+                "FTPBD (English)" -> "/FTP-2/"
+                "FTPBD (Anime)" -> "/FTP-5/"
+                "FTPBD (Sports)" -> "/FTP-7/"
+                else -> "/"
+            }
+
+            val jsonPayload = """{"action":"get","search":{"href":"$rootPath","pattern":"$query","ignorecase":true}}"""
+            val body = okhttp3.RequestBody.create(okhttp3.MediaType.get("application/json"), jsonPayload)
+            val request = Request.Builder().url(searchUrl).post(body).headers(getGlobalHeaders()).build()
+
+            try {
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) return@withContext emptyList()
+                    val bodyString = response.body?.string() ?: return@withContext emptyList()
+                    parseH5aiSearchResponse(bodyString, query)
+                }
+            } catch (e: Exception) {
+                Log.e("FtpBd", "H5ai search failed: ${e.message}")
+                fetchRecursiveSearch(query) // Fallback
+            }
+        }
+    }
+
+    private fun parseH5aiSearchResponse(jsonStr: String, query: String): List<SAnime> {
+        val results = mutableListOf<SAnime>()
+        try {
+            val json = Json.parseToJsonElement(jsonStr)
+            val searchArr = json.jsonObject["search"]?.jsonArray ?: return emptyList()
+
+            searchArr.forEach { element ->
+                val href = element.jsonObject["href"]?.jsonPrimitive?.content?.replace('\\', '/') ?: return@forEach
+                val isFolder = href.endsWith("/")
+                
+                val cleanPath = href.trimEnd('/')
+                val rawTitle = cleanPath.substringAfterLast('/')
+                val title = try { java.net.URLDecoder.decode(rawTitle, "UTF-8") } catch (e: Exception) { rawTitle }
+
+                if (title.isBlank() || isIgnored(title)) return@forEach
+                
+                // Only include video files or folders
+                if (!isFolder && !listOf(".mkv", ".mp4", ".avi", ".ts", ".m4v", ".webm", ".mov").any { href.toLowerCase().endsWith(it) }) return@forEach
+
+                results.add(SAnime.create().apply {
+                    this.title = title
+                    this.url = fixUrl("$baseUrl$href")
+                    this.thumbnail_url = ""
+                })
+            }
+        } catch (e: Exception) {
+            Log.e("FtpBd", "H5ai parse failed: ${e.message}")
+        }
+        return collapseAndSortResults(results, query)
+    }
+
+    private suspend fun fetchRecursiveSearch(query: String): List<SAnime> {
         return coroutineScope {
             val semaphore = Semaphore(15)
             val results = searchPaths.map { path ->
@@ -311,10 +383,24 @@ class FtpBd(
                         }
                     }
                 }
-            }.awaitAll().flatten().distinctBy { it.url }
-
-            AnimesPage(sortByTitle(results, query), false).also { enrichAnimes(it.animes) }
+            }.awaitAll().flatten()
+            collapseAndSortResults(results, query)
         }
+    }
+
+    private fun collapseAndSortResults(list: List<SAnime>, query: String): List<SAnime> {
+        val distinct = list.distinctBy { it.url }
+        val folders = distinct.filter { it.url.endsWith("/") }.map { it.url }.toSet()
+        val collapsed = if (folders.isEmpty()) distinct else {
+            distinct.filter { 
+                if (it.url.endsWith("/")) true 
+                else {
+                    val parentUrl = it.url.substringBeforeLast('/') + "/"
+                    !folders.contains(parentUrl)
+                }
+            }
+        }
+        return sortByTitle(collapsed, query)
     }
 
     private fun parseSearchDocument(document: Document, query: String): List<SAnime> {
@@ -405,7 +491,7 @@ class FtpBd(
             val rawYear = FilterData.YEARS[year]
             val formattedYear = if (name == "FTPBD (Anime)" && cat == 1) {
                 if (rawYear == "1990-&-Before") "(2000)%20%26%20Before" 
-                else if (rawYear == "2001--2010") "(2001--2010)" // Special range if it exists
+                else if (rawYear == "2001--2010") "(2001--2010)"
                 else "($rawYear)"
             } else {
                 rawYear
@@ -427,7 +513,7 @@ class FtpBd(
             val apiKey = preferences.getString(PREF_TMDB_API_KEY, "") ?: ""
             if (apiKey.isNotBlank()) fetchPosterFromTMDb(anime, apiKey)
         }
-        return super.getAnimeDetails(anime)
+        return anime
     }
 
     override fun animeDetailsParse(response: Response): SAnime {
