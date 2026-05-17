@@ -386,12 +386,18 @@ class FtpBd(
 
     private fun sortByTitle(list: List<SAnime>, query: String): List<SAnime> {
         val normalizedQuery = query.lowercase()
-        return list.sortedByDescending { 
-            if (it.title.lowercase() == normalizedQuery) 2.0
-            else if (it.title.lowercase().startsWith(normalizedQuery)) 1.5
-            else if (it.title.lowercase().contains(normalizedQuery)) 1.0
-            else 0.0
-        }
+        return list.sortedWith(
+            compareByDescending<SAnime> { 
+                if (it.title.lowercase() == normalizedQuery) 2.0
+                else if (it.title.lowercase().startsWith(normalizedQuery)) 1.5
+                else if (it.title.lowercase().contains(normalizedQuery)) 1.0
+                else 0.0
+            }.thenByDescending { it.title.naturalOrder() }
+        )
+    }
+
+    private fun String.naturalOrder(): String {
+        return Regex("""\d+""").replace(this) { it.value.padStart(12, '0') }
     }
 
     override fun searchAnimeRequest(page: Int, query: String, filters: AnimeFilterList): Request {
@@ -515,10 +521,6 @@ class FtpBd(
         parseDirectoryRecursive(document, depth, episodes, mutableSetOf())
         
         return episodes.sortedWith(compareBy { it.name.naturalOrder() }).reversed()
-    }
-
-    private fun String.naturalOrder(): String {
-        return Regex("""\d+""").replace(this) { it.value.padStart(10, '0') }
     }
 
     private suspend fun parseDirectoryRecursive(document: Document, depth: Int, episodes: MutableList<SEpisode>, visited: MutableSet<String>) {
