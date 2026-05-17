@@ -41,6 +41,9 @@ import java.io.IOException
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+
 class FtpBd(
     override val name: String,
     override val baseUrl: String,
@@ -333,7 +336,7 @@ class FtpBd(
             }
 
             val jsonPayload = """{"action":"get","search":{"href":"$rootPath","pattern":"$query","ignorecase":true}}"""
-            val body = okhttp3.RequestBody.create(okhttp3.MediaType.get("application/json"), jsonPayload)
+            val body = jsonPayload.toRequestBody("application/json".toMediaType())
             val request = Request.Builder().url(searchUrl).post(body).headers(getGlobalHeaders()).build()
 
             try {
