@@ -123,6 +123,26 @@ class FtpBd(
         }
     }
 
+    data class TitleYear(val title: String, val year: String?)
+
+    private fun extractTitleYear(rawTitle: String): TitleYear {
+        val yearRegex = Regex("""(?:\(|\b)(\d{4})(?:\)|\b)""")
+        val yearMatch = yearRegex.find(rawTitle)
+        val year = yearMatch?.groupValues?.get(1)
+        
+        var cleanTitle = rawTitle
+            .replace(yearRegex, "")
+            .replace("-", " ")
+            .replace(".", " ")
+            .replace(Regex("""\b(1080p|720p|480p|4k|uhd|bluray|brrip|webrip|webdl|hdtv|x264|x265|h264|h265|hevc|dual audio|multi|eng|hindi|sub|dub|reencoded|TV Documentary|TV Series|TV Mini Series|Complete Series|Complete)\b""", RegexOption.IGNORE_CASE), "")
+            .replace(Regex("""\[.*?\]"""), "")
+            .replace(Regex("""\(.*?\)"""), "")
+            .replace(Regex("""\s+"""), " ")
+            .trim()
+            
+        return TitleYear(cleanTitle, year)
+    }
+
     private suspend fun fetchPoster(anime: SAnime, apiKey: String) {
         val cacheKey = "poster_omdb_${anime.title.hashCode()}"
         val cachedPoster = preferences.getString(cacheKey, null)
@@ -133,8 +153,10 @@ class FtpBd(
         }
 
         try {
-            val cleanTitle = anime.title.replace(Regex("""\(?\d{4}\)?"""), "").trim()
-            val url = "https://www.omdbapi.com/?apikey=$apiKey&t=${URLEncoder.encode(cleanTitle, "UTF-8")}"
+            val (title, year) = extractTitleYear(anime.title)
+            var url = "https://www.omdbapi.com/?apikey=$apiKey&t=${URLEncoder.encode(title, "UTF-8")}"
+            if (year != null) url += "&y=$year"
+            
             val response = client.newCall(GET(url)).awaitSuccess()
             val body = response.body?.string().orEmpty()
             val omdb = omdbJson.decodeFromString<OMDbResponse>(body)
@@ -158,8 +180,10 @@ class FtpBd(
         }
 
         try {
-            val cleanTitle = anime.title.replace(Regex("""\(?\d{4}\)?"""), "").trim()
-            val url = "https://api.themoviedb.org/3/search/multi?api_key=$apiKey&query=${URLEncoder.encode(cleanTitle, "UTF-8")}"
+            val (title, year) = extractTitleYear(anime.title)
+            var url = "https://api.themoviedb.org/3/search/multi?api_key=$apiKey&query=${URLEncoder.encode(title, "UTF-8")}"
+            if (year != null) url += "&year=$year"
+            
             val response = client.newCall(GET(url)).awaitSuccess()
             val body = response.body?.string().orEmpty()
             val tmdb = omdbJson.decodeFromString<TMDbResponse>(body)
