@@ -513,7 +513,12 @@ class FtpBd(
         val episodes = mutableListOf<SEpisode>()
         val depth = if (name == "FTPBD (Anime)") 5 else 3
         parseDirectoryRecursive(document, depth, episodes, mutableSetOf())
-        return episodes.sortedBy { it.name }.reversed()
+        
+        return episodes.sortedWith(compareBy { it.name.naturalOrder() }).reversed()
+    }
+
+    private fun String.naturalOrder(): String {
+        return Regex("""\d+""").replace(this) { it.value.padStart(10, '0') }
     }
 
     private suspend fun parseDirectoryRecursive(document: Document, depth: Int, episodes: MutableList<SEpisode>, visited: MutableSet<String>) {
