@@ -252,7 +252,7 @@ class FtpBd(
         if (page == 1) directoryCache.remove(cacheKey)
 
         val allAnimes = directoryCache[cacheKey] ?: fetchAnimesStreaming(request).also { 
-            if (it.isNotEmpty()) directoryCache[cacheKey] = it.sortedWith(compareBy { anime -> anime.title.naturalOrder() })
+            if (it.isNotEmpty()) directoryCache[cacheKey] = it.sortedWith(compareBy { anime -> anime.title.naturalOrder() }).reversed()
         }
 
         if (allAnimes.isEmpty()) return AnimesPage(emptyList(), false)
@@ -514,7 +514,7 @@ class FtpBd(
         val depth = if (name == "FTPBD (Anime)") 5 else 3
         parseDirectoryRecursive(document, depth, episodes, mutableSetOf())
         
-        return episodes.sortedWith(compareBy { it.name.naturalOrder() })
+        return episodes.sortedWith(compareBy { it.name.naturalOrder() }).reversed()
     }
 
     private fun String.naturalOrder(): String {
