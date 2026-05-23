@@ -69,8 +69,6 @@ class FtpBd(
         isLenient = true
     }
 
-    private val cm by lazy { CookieManager(client) }
-
     private val unsafeTrustManager = object : X509TrustManager {
         override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
         override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
@@ -81,11 +79,16 @@ class FtpBd(
         init(null, arrayOf<TrustManager>(unsafeTrustManager), SecureRandom())
     }.socketFactory
 
-    override val client: OkHttpClient = network.client.newBuilder()
+    private val unsafeBaseClient: OkHttpClient = network.client.newBuilder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
         .sslSocketFactory(unsafeSslSocketFactory, unsafeTrustManager)
         .hostnameVerifier { _, _ -> true }
+        .build()
+
+    private val cm by lazy { CookieManager(unsafeBaseClient) }
+
+    override val client: OkHttpClient = unsafeBaseClient.newBuilder()
         .dispatcher(okhttp3.Dispatcher().apply {
             maxRequests = 100
             maxRequestsPerHost = 100
