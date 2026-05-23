@@ -36,7 +36,12 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.IOException
 import java.net.URLEncoder
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 class FtpBd(
     override val name: String,
@@ -64,11 +69,23 @@ class FtpBd(
         isLenient = true
     }
 
-    private val cm by lazy { CookieManager(network.client) }
+    private val cm by lazy { CookieManager(client) }
+
+    private val unsafeTrustManager = object : X509TrustManager {
+        override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+        override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+        override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+    }
+
+    private val unsafeSslSocketFactory = SSLContext.getInstance("TLS").apply {
+        init(null, arrayOf<TrustManager>(unsafeTrustManager), SecureRandom())
+    }.socketFactory
 
     override val client: OkHttpClient = network.client.newBuilder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)
+        .sslSocketFactory(unsafeSslSocketFactory, unsafeTrustManager)
+        .hostnameVerifier { _, _ -> true }
         .dispatcher(okhttp3.Dispatcher().apply {
             maxRequests = 100
             maxRequestsPerHost = 100

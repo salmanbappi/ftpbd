@@ -26,7 +26,7 @@ class FtpBdFactory : AnimeSourceFactory {
         ),
         FtpBd(
             "FTPBD (English)",
-            "https://server2.ftpbd.net",
+            "http://server2.ftpbd.net",
             0x53324654504244L,
             "FTP-2",
             "FTP-2/English%20Movies/2025/",
@@ -83,7 +83,7 @@ class FtpBdFactory : AnimeSourceFactory {
         ),
         FtpBd(
             "FTPBD (Series & Tutorial)",
-            "https://server4.ftpbd.net",
+            "http://server4.ftpbd.net",
             0x53344654504244L,
             "FTP-4",
             "FTP-4/English-Foreign-TV-Series/",
